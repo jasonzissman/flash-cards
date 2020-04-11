@@ -1,7 +1,9 @@
-var express = require('express');
-var app = express();
-var uuidv4 = require('uuid/v4');
-var port = 3001;
+const express = require('express');
+const WebSocket = require('ws');
+const app = express();
+const uuidv4 = require('uuid/v4');
+const httpPort = 3001;
+const webSocketPort = 3002;
 
 // HTML/JS
 app.use(express.static('app'));
@@ -35,18 +37,21 @@ app.get('/:tenantId/games', (req,res) => {
   res.status(200).json(CURRENT_GAMES[tenantId]);
 });
 
-// Join existing game via WebSocket connection
-app.post('/:tenantId/games/:gameId/join', (req, res) => {
-  
-  // TODO - implement websocket connection!
-  // might need to use library other than express for websockets
+const webSocketServer = new WebSocket.Server({ port: webSocketPort });
+// /:tenantId/games/:gameId/join
+webSocketServer.on('connection', (webSocketConn) => {
 
-  let tenantId = req.params.tenantId;
-  let gameId = req.params.gameId;
+  //let tenantId = req.params.tenantId;
+  //let gameId = req.params.gameId;
 
-  res.status(200).json({});
+  webSocketConn.on('message', function incoming(message) {
+    console.log('received: %s', message);
+  });
+
+  webSocketConn.send('something');
 });
 
-app.listen(port, () => {
+
+app.listen(httpPort, () => {
   console.log('Flashcards app listening on port %s!', port);
 });
