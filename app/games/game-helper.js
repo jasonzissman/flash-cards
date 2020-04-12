@@ -2,7 +2,7 @@ const uuidv4 = require('uuid/v4');
 
 const gameHelper = {
 
-    CURRENT_GAMES: {},
+    CURRENT_GAMES: [],
 
     createNewGame: (tenantId) => {
 
@@ -30,16 +30,12 @@ const gameHelper = {
         return activeGames;
     },
 
-    processMessage: (sessionInfo, message) => {
+    processMessage: (gameId, tenantId, userId, message) => {
 
         // TODO validate message data here
         let response = {
             message: "Action unknown."
         };
-
-        const gameId = sessionInfo.gameId;
-        const tenantId = sessionInfo.tenantId;
-        const userId = sessionInfo.userId;
 
         if (message.action === "JOIN_GAME") {
             response = gameHelper.joinGame(gameId, tenantId, userId);
@@ -47,8 +43,12 @@ const gameHelper = {
 
         return response;
     },
-
-    getGame(gameId) {
+    deleteGame: (gameId) => {
+        gameHelper.CURRENT_GAMES = gameHelper.CURRENT_GAMES.filter((game) => {
+            return game.id !== gameId;
+        });
+    },
+    getGame: (gameId) => {
         let retVal = undefined;
         for (var game in gameHelper.CURRENT_GAMES) {
             if (game.id === gameId) {
@@ -57,6 +57,29 @@ const gameHelper = {
             }
         }
         return retVal;
+    },
+
+    exitGame: (gameId, tenantId, userId) => {
+
+        // TODO validate input data here       
+
+        const game = gameHelper.getGame(gameId);
+        game.activePlayers = game.activePlayers.filter((activePlayer) => {
+            return activePlayer.id !== userId;
+        });
+
+        console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
+
+        if (game.activePlayers.length === 0) {
+            console.log("No more users in game %s for tenant %s. Deleting game.", gameId, tenantId);
+            gameHelper.deleteGame(gameId);
+        }
+
+        let response = {
+            message: "User removed from game."
+        };
+
+        return response;
     },
 
     joinGame: (gameId, tenantId, userId) => {

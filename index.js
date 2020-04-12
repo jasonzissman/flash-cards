@@ -48,13 +48,22 @@ webSocketServer.on('connection', (webSocketConn) => {
       };
     }
 
-    let response = gameHelper.processMessage(webSocketConn.sessionInfo, message);
+    const gameId = webSocketConn.sessionInfo.gameId;
+    const tenantId = webSocketConn.sessionInfo.tenantId;
+    const userId = webSocketConn.sessionInfo.userId;
+
+    let response = gameHelper.processMessage(gameId, tenantId, userId, message);
     webSocketConn.send(response);
   });
 
   // On connection ended
   webSocketConn.on('close', () => {
     console.log("WS conn closed");
+    const gameId = webSocketConn.sessionInfo.gameId;
+    const tenantId = webSocketConn.sessionInfo.tenantId;
+    const userId = webSocketConn.sessionInfo.userId;
+    let response = gameHelper.exitGame(gameId, tenantId, userId);
+    webSocketConn.send(response);
   });
 
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.
