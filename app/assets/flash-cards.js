@@ -32,6 +32,7 @@ webSocket.onopen = (event) => {
 };
 
 webSocket.onmessage = (event) => {
-  console.log("Response from server: " + event.data);
+  document.getElementById("game-stuff").innerHTML += "<hr/>";
+  document.getElementById("game-stuff").innerHTML += event.data;
 };
 

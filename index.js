@@ -53,8 +53,18 @@ webSocketServer.on('connection', (webSocketConn) => {
     const userId = webSocketConn.sessionInfo.userId;
 
     let response = gameHelper.processMessage(gameId, tenantId, userId, message);
+
+    if (response.newUserJoined) {
+      gameHelper.getGame(gameId).gameStateChangeEmitter.on('game-state-changed', (gameState) => {
+        webSocketConn.send(JSON.stringify(gameState));
+      });
+    }
+
     webSocketConn.send(JSON.stringify(response));
   });
+
+
+
 
   // On connection ended
   webSocketConn.on('close', () => {
@@ -69,7 +79,7 @@ webSocketServer.on('connection', (webSocketConn) => {
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.
   // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
 
-  webSocketConn.send(JSON.stringify({status:"connection established"}));
+  webSocketConn.send(JSON.stringify({ status: "connection established" }));
 });
 
 

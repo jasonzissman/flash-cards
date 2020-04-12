@@ -1,3 +1,4 @@
+const GameStateChangeEmitter = require('./game-state-change-emitter');
 const uuidv4 = require('uuid/v4');
 
 const gameHelper = {
@@ -7,12 +8,15 @@ const gameHelper = {
     createNewGame: (tenantId) => {
 
         let gameId = uuidv4();
-
-        gameHelper.CURRENT_GAMES.push({
+        let newGame = {
             id: gameId,
+            dateCreated: new Date().getTime(),
             tenantId: tenantId,
+            gameStateChangeEmitter: new GameStateChangeEmitter(),
             activePlayers: []
-        });
+        };
+
+        gameHelper.CURRENT_GAMES.push(newGame);
 
         return gameId;
     },
@@ -23,6 +27,7 @@ const gameHelper = {
             if (game.tenantId === tenantId && game.activePlayers.length > 0) {
                 activeGames.push({
                     id: game.id,
+                    dateCreated: game.dateCreated,
                     numActivePlayers: game.activePlayers.length
                 });
             }
@@ -32,22 +37,36 @@ const gameHelper = {
 
     processMessage: (gameId, tenantId, userId, message) => {
 
-        // TODO validate message data here
+        // TODO validate input data here
+
         let response = {
             message: "Action unknown."
         };
 
         if (message.action === "JOIN_GAME") {
-            response = gameHelper.joinGame(gameId, tenantId, userId);
+            // TODO - get display name
+            let displayName = userId;
+            response = gameHelper.joinGame(gameId, tenantId, userId, displayName);
+        }
+
+        let game = gameHelper.getGame(gameId);
+        if (game) {
+            game.gameStateChangeEmitter.emit('game-state-changed', gameHelper.getUserViewOfGame(gameId));
         }
 
         return response;
     },
+
     deleteGame: (gameId) => {
+        // TODO - eventually migrate old games elsewhere
+        // so that we maintain historical data. Don't just delete.
+        
+        gameHelper.getGame(gameId).gameStateChangeEmitter.removeAllListeners();
         gameHelper.CURRENT_GAMES = gameHelper.CURRENT_GAMES.filter((game) => {
             return game.id !== gameId;
         });
     },
+
     getGame: (gameId) => {
         let retVal = undefined;
         for (var game of gameHelper.CURRENT_GAMES) {
@@ -56,6 +75,19 @@ const gameHelper = {
                 break;
             }
         }
+        return retVal;
+    },
+
+    getUserViewOfGame: (gameId) => {
+        let retVal = undefined;
+        let game = gameHelper.getGame(gameId);
+        if (game) {
+            retVal = {
+                id: game.id,
+                dateCreated: game.dateCreated,
+                numActivePlayers: game.activePlayers.length
+            };
+        } 
         return retVal;
     },
 
@@ -78,6 +110,8 @@ const gameHelper = {
                 console.log("No more users in game %s for tenant %s. Deleting game.", gameId, tenantId);
                 gameHelper.deleteGame(gameId);
             }
+            
+            game.gameStateChangeEmitter.emit('game-state-changed', gameHelper.getUserViewOfGame(gameId));
 
             response = {
                 message: "User removed from game."
@@ -87,7 +121,7 @@ const gameHelper = {
         return response;
     },
 
-    joinGame: (gameId, tenantId, userId) => {
+    joinGame: (gameId, tenantId, userId, displayName) => {
 
         let response = {
             status: "Unable to join game"
@@ -110,10 +144,13 @@ const gameHelper = {
             // inserting new session anyway
             if (!playerAlreadyJoined) {
                 game.activePlayers.push({
-                    id: userId
+                    id: userId,
+                    displayName: displayName
                 });
+
                 response = {
-                    status: "Succesfully joined game"
+                    status: "Succesfully joined game",
+                    newUserJoined: true,
                 };
                 console.log("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
             }
