@@ -1,4 +1,5 @@
 const GameStateChangeEmitter = require('./game-state-change-emitter');
+const GameStateFlashCardsMultiplication = require('./game-state-flash-cards-multiplication');
 const uuidv4 = require('uuid/v4');
 
 const gameHelper = {
@@ -8,15 +9,23 @@ const gameHelper = {
     createNewGame: (tenantId) => {
 
         let gameId = uuidv4();
+        let gameStateChangeEmitter = new GameStateChangeEmitter();
+        let gameState = new GameStateFlashCardsMultiplication();        
+        
         let newGame = {
             id: gameId,
             dateCreated: new Date().getTime(),
             tenantId: tenantId,
-            gameStateChangeEmitter: new GameStateChangeEmitter(),
+            gameStateChangeEmitter: gameStateChangeEmitter,
+            gameState: gameState,
             activePlayers: []
         };
 
         gameHelper.CURRENT_GAMES.push(newGame);
+
+        gameState.onGameStateChange(() => {
+            gameHelper.emitGameStateChange(gameId);
+        });
 
         return gameId;
     },
@@ -49,12 +58,16 @@ const gameHelper = {
             response = gameHelper.joinGame(gameId, tenantId, userId, displayName);
         }
 
+        gameHelper.emitGameStateChange(gameId);
+
+        return response;
+    },
+
+    emitGameStateChange: (gameId) => {
         let game = gameHelper.getGame(gameId);
         if (game) {
             game.gameStateChangeEmitter.emit('game-state-changed', gameHelper.getUserViewOfGame(gameId));
         }
-
-        return response;
     },
 
     deleteGame: (gameId) => {
@@ -105,13 +118,8 @@ const gameHelper = {
             });
     
             console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
-    
-            if (game.activePlayers.length === 0) {
-                console.log("No more users in game %s for tenant %s. Deleting game.", gameId, tenantId);
-                gameHelper.deleteGame(gameId);
-            }
-            
-            game.gameStateChangeEmitter.emit('game-state-changed', gameHelper.getUserViewOfGame(gameId));
+                            
+            gameHelper.emitGameStateChange(gameId);
 
             response = {
                 message: "User removed from game."
