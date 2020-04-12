@@ -1,57 +1,69 @@
 const express = require('express');
 const WebSocket = require('ws');
 const app = express();
-const uuidv4 = require('uuid/v4');
 const httpPort = 3001;
 const webSocketPort = 3002;
+
+const gameHelper = require("./app/game-helper");
 
 // HTML/JS
 app.use(express.static('app'));
 
-let CURRENT_GAMES = {};
-
 // Create new game
 app.post('/:tenantId/games', (req, res) => {
   let tenantId = req.params.tenantId;
-  let gameName = req.query.gameName;
-
-  if (!CURRENT_GAMES[tenantId]) {
-    CURRENT_GAMES[tenantId] = [];
-  }
-
-  let gameId = uuidv4();
-  CURRENT_GAMES[tenantId].push({
-    gameId: gameId,
-    gameName: gameName,
-    status: "NEW"
-  });
+  const gameId = gameHelper.createNewGame(tenantId);
 
   res.status(200).json({
     gameId: gameId
   });
 });
 
-// See current games for tenant
-app.get('/:tenantId/games', (req,res) => {
+// See active games for tenant
+app.get('/:tenantId/active-games', (req, res) => {
   let tenantId = req.params.tenantId;
-  res.status(200).json(CURRENT_GAMES[tenantId]);
+  let activeGamesForTenant = gameHelper.getActiveGamesForTenant(tenantId);
+  res.status(200).json(activeGamesForTenant);
 });
 
+// Handle websocket connection
 const webSocketServer = new WebSocket.Server({ port: webSocketPort });
-// /:tenantId/games/:gameId/join
 webSocketServer.on('connection', (webSocketConn) => {
 
-  //let tenantId = req.params.tenantId;
-  //let gameId = req.params.gameId;
+  console.log('connection established');
 
-  webSocketConn.on('message', function incoming(message) {
-    console.log('received: %s', message);
+  // On message received
+  webSocketConn.on('message', (messageStr) => {
+    let message = JSON.parse(messageStr);
+    console.log('received: ' + JSON.stringify(message, undefined, 4));
+
+    // Associate this connection with the game/tenant/user
+    if (!webSocketConn.sessionInfo) {
+      // TODO - eventually, instead of trusting client, establish token generation scheme
+      // where token is associated with these points.
+      webSocketConn.sessionInfo = {
+        tenantId: message.tenantId,
+        gameId: message.gameId,
+        userId: message.userId
+      };
+    }
+
+    let response = gameHelper.processMessage(webSocketConn.sessionInfo, message);
+    webSocketConn.send(response);
   });
 
-  webSocketConn.send('something');
+  // On connection ended
+  webSocketConn.on('close', () => {
+    console.log("WS conn closed");
+  });
+
+  // TODO - put in heartbeat/ping that periodically confirms connections are still active.
+  // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+
+  webSocketConn.send('connection established!');
 });
 
 
 app.listen(httpPort, () => {
-  console.log('Flashcards app listening on port %s!', port);
+  console.log('Flashcards app listening on port %s!', httpPort);
 });

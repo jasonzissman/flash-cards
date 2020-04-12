@@ -1,19 +1,25 @@
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
+const userId = new URLSearchParams(window.location.search).get('userId');
 
 // Websocket against /{tenantId}/games/{gameId}/join
 // TODO - eventually use wss, not ws
-const webSocketUrl = `ws://${tenantId}/games/${gameId}/join`;
+const webSocketUrl = `ws://localhost:3002`;
 const webSocket = new WebSocket(webSocketUrl);
 
 webSocket.onopen = (event) => {
-  exampleSocket.send("Here's some text that the server is urgently awaiting!");
+  
+  // join game
+  const joinGameObject = {
+    action: "JOIN_GAME",
+    tenantId: tenantId,
+    gameId: gameId,
+    userId: userId
+  };
+  webSocket.send(JSON.stringify(joinGameObject));
 };
 
 webSocket.onmessage = (event) => {
-  alert("Response from server: " + event.data);
+  console.log("Response from server: " + event.data);
 };
 
-setTimeout(() => {
-    webSocket.close();
-}, 5000);
