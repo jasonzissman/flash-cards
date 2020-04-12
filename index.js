@@ -4,7 +4,7 @@ const app = express();
 const httpPort = 3001;
 const webSocketPort = 3002;
 
-const gameHelper = require("./app/game-helper");
+const gameHelper = require("./app/games/game-helper");
 
 // HTML/JS
 app.use(express.static('app'));
@@ -53,7 +53,7 @@ webSocketServer.on('connection', (webSocketConn) => {
     const userId = webSocketConn.sessionInfo.userId;
 
     let response = gameHelper.processMessage(gameId, tenantId, userId, message);
-    webSocketConn.send(response);
+    webSocketConn.send(JSON.stringify(response));
   });
 
   // On connection ended
@@ -63,13 +63,13 @@ webSocketServer.on('connection', (webSocketConn) => {
     const tenantId = webSocketConn.sessionInfo.tenantId;
     const userId = webSocketConn.sessionInfo.userId;
     let response = gameHelper.exitGame(gameId, tenantId, userId);
-    webSocketConn.send(response);
+    webSocketConn.send(JSON.stringify(response));
   });
 
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.
   // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
 
-  webSocketConn.send('connection established!');
+  webSocketConn.send(JSON.stringify({status:"connection established"}));
 });
 
 

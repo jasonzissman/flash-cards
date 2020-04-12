@@ -19,11 +19,11 @@ const gameHelper = {
 
     getActiveGamesForTenant: (tenantId) => {
         let activeGames = [];
-        for (var game in gameHelper.CURRENT_GAMES) {
+        for (var game of gameHelper.CURRENT_GAMES) {
             if (game.tenantId === tenantId && game.activePlayers.length > 0) {
                 activeGames.push({
                     id: game.id,
-                    tenantId: game.tenantId
+                    numActivePlayers: game.activePlayers.length
                 });
             }
         }
@@ -50,7 +50,7 @@ const gameHelper = {
     },
     getGame: (gameId) => {
         let retVal = undefined;
-        for (var game in gameHelper.CURRENT_GAMES) {
+        for (var game of gameHelper.CURRENT_GAMES) {
             if (game.id === gameId) {
                 retVal = game;
                 break;
@@ -62,22 +62,27 @@ const gameHelper = {
     exitGame: (gameId, tenantId, userId) => {
 
         // TODO validate input data here       
+        let response = {
+            message: "Could not remove user from game."
+        };
 
         const game = gameHelper.getGame(gameId);
-        game.activePlayers = game.activePlayers.filter((activePlayer) => {
-            return activePlayer.id !== userId;
-        });
+        if (game) {
+            game.activePlayers = game.activePlayers.filter((activePlayer) => {
+                return activePlayer.id !== userId;
+            });
+    
+            console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
+    
+            if (game.activePlayers.length === 0) {
+                console.log("No more users in game %s for tenant %s. Deleting game.", gameId, tenantId);
+                gameHelper.deleteGame(gameId);
+            }
 
-        console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
-
-        if (game.activePlayers.length === 0) {
-            console.log("No more users in game %s for tenant %s. Deleting game.", gameId, tenantId);
-            gameHelper.deleteGame(gameId);
+            response = {
+                message: "User removed from game."
+            };
         }
-
-        let response = {
-            message: "User removed from game."
-        };
 
         return response;
     },
@@ -91,26 +96,29 @@ const gameHelper = {
         // TODO - validate that this user belongs to this tenant and this game
 
         const game = gameHelper.getGame(gameId);
-        var playerAlreadyJoined = false;
-        for (var activePlayer in game.activePlayers) {
-            if (activePlayer.id === userId) {
-                playerAlreadyJoined = true;
-                break;
+        if (game) {
+            var playerAlreadyJoined = false;
+            for (var activePlayer of game.activePlayers) {
+                if (activePlayer.id === userId) {
+                    playerAlreadyJoined = true;
+                    break;
+                }
+            }
+    
+            // TODO - if player already joined, consider
+            // bouncing previous session for that user and
+            // inserting new session anyway
+            if (!playerAlreadyJoined) {
+                game.activePlayers.push({
+                    id: userId
+                });
+                response = {
+                    status: "Succesfully joined game"
+                };
+                console.log("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
             }
         }
 
-        // TODO - if player already joined, consider
-        // bouncing previous session for that user and
-        // inserting new session anyway
-        if (!playerAlreadyJoined) {
-            game.activePlayers.push({
-                userId: userId
-            });
-            response = {
-                status: "Succesfully joined game"
-            };
-            console.log("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
-        }
 
         return response;
     }
