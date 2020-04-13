@@ -1,16 +1,21 @@
-class GameStateFlashCardsMultiplication {
+const GameStateChangeEmitter = require('./game-state-change-emitter');
 
-    // Simple first pass: use keyboard input, not multiple choice answers
+class GameStateFlashCardsMultiplication {
 
     constructor() {
         this.currentRoundIndex = 0;
-        this.rounds = []; // game rounds containing problem presented, each person's answer, who won, right answer, each person's timing
+        this.hasGameStarted = false;
+        this.rounds = []; 
+        this.gameStateChangeEmitter = new GameStateChangeEmitter();
+    }
+    
+    emitGameStateChange() {
+        this.gameStateChangeEmitter.emit('game-state-changed', this.getUserViewOfGameState());
     }
 
-    onGameStateChange(callback) {
-        if (callback) {
-            callback();
-        }
+    startGame() {
+        this.hasGameStarted = true;
+        this.startNextRound();
     }
 
     startNextRound() {
@@ -29,12 +34,21 @@ class GameStateFlashCardsMultiplication {
 
         setTimeout(() => {
             // TODO - make sure this doesn't bleed in between rounds
-            if (this.rounds[this.currentRoundIndex].active) {
+            let roundIndex = this.currentRoundIndex;
+            if (this.rounds[roundIndex].active) {
                 this.endRound();
             }
         }, roundDuration * 1000);
 
-        this.onGameStateChange();
+        this.emitGameStateChange();
+    }
+
+    getUserViewOfGameState () {
+        return {
+            currentRoundIndex: this.currentRoundIndex,
+            hasGameStarted: this.hasGameStarted,
+            rounds: this.rounds // TODO - FILTER
+        };
     }
 
     getCurrentRoundInfo() {
@@ -53,7 +67,7 @@ class GameStateFlashCardsMultiplication {
     }
 
     userAnswered(userId, answer) {
-        // Update round info to include user's answer and time
+
         let currentRound = this.rounds[this.currentRoundIndex];
         if (currentRound.active) {
 
@@ -62,7 +76,7 @@ class GameStateFlashCardsMultiplication {
                 timeSubmitted: new Date().getTime()
             };
 
-            this.onGameStateChange();
+            this.emitGameStateChange();
         }
     }
 
@@ -70,8 +84,8 @@ class GameStateFlashCardsMultiplication {
         if (this.rounds[this.currentRoundIndex].active) {
             this.rounds[this.currentRoundIndex].active = false;
             this.rounds[this.currentRoundIndex].endTime = new Date().getTime();
-            this.currentRound++;
-            this.onGameStateChange();
+            this.currentRoundIndex++;
+            this.emitGameStateChange();
         }
     }
 

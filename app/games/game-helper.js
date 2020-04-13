@@ -1,4 +1,3 @@
-const GameStateChangeEmitter = require('./game-state-change-emitter');
 const GameStateFlashCardsMultiplication = require('./game-state-flash-cards-multiplication');
 const uuidv4 = require('uuid/v4');
 
@@ -9,23 +8,18 @@ const gameHelper = {
     createNewGame: (tenantId) => {
 
         let gameId = uuidv4();
-        let gameStateChangeEmitter = new GameStateChangeEmitter();
+        
         let gameState = new GameStateFlashCardsMultiplication();        
         
         let newGame = {
             id: gameId,
             dateCreated: new Date().getTime(),
             tenantId: tenantId,
-            gameStateChangeEmitter: gameStateChangeEmitter,
             gameState: gameState,
             activePlayers: []
         };
 
         gameHelper.CURRENT_GAMES.push(newGame);
-
-        gameState.onGameStateChange(() => {
-            gameHelper.emitGameStateChange(gameId);
-        });
 
         return gameId;
     },
@@ -56,76 +50,40 @@ const gameHelper = {
             // TODO - get display name
             let displayName = userId;
             response = gameHelper.joinGame(gameId, tenantId, userId, displayName);
+        } else if (message.action === "START_GAME") {
+            response = gameHelper.startGame(gameId);
+        } else if (message.action === "SUBMIT_ANSWER") {
+            response = gameHelper.submitAnswer(gameId, userId, message.answer);
         }
-
-        gameHelper.emitGameStateChange(gameId);
 
         return response;
     },
 
-    emitGameStateChange: (gameId) => {
-        let game = gameHelper.getGame(gameId);
-        if (game) {
-            game.gameStateChangeEmitter.emit('game-state-changed', gameHelper.getUserViewOfGame(gameId));
-        }
-    },
-
-    deleteGame: (gameId) => {
-        // TODO - eventually migrate old games elsewhere
-        // so that we maintain historical data. Don't just delete.
-        
-        gameHelper.getGame(gameId).gameStateChangeEmitter.removeAllListeners();
-        gameHelper.CURRENT_GAMES = gameHelper.CURRENT_GAMES.filter((game) => {
-            return game.id !== gameId;
-        });
-    },
-
-    getGame: (gameId) => {
-        let retVal = undefined;
-        for (var game of gameHelper.CURRENT_GAMES) {
-            if (game.id === gameId) {
-                retVal = game;
-                break;
-            }
-        }
-        return retVal;
-    },
-
-    getUserViewOfGame: (gameId) => {
-        let retVal = undefined;
-        let game = gameHelper.getGame(gameId);
-        if (game) {
-            retVal = {
-                id: game.id,
-                dateCreated: game.dateCreated,
-                numActivePlayers: game.activePlayers.length
-            };
-        } 
-        return retVal;
-    },
-
-    exitGame: (gameId, tenantId, userId) => {
-
-        // TODO validate input data here       
+    submitAnswer: (gameId, userId, answer) => {
         let response = {
-            message: "Could not remove user from game."
+            message: "Could not submit answer."
         };
-
-        const game = gameHelper.getGame(gameId);
-        if (game) {
-            game.activePlayers = game.activePlayers.filter((activePlayer) => {
-                return activePlayer.id !== userId;
-            });
-    
-            console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
-                            
-            gameHelper.emitGameStateChange(gameId);
-
+        let game = gameHelper.getGame(gameId);
+        if (game && game.gameState && !game.gameState.hasGameStarted) {
+            game.gameState.userAnswered(userId, answer);
             response = {
-                message: "User removed from game."
+                message: "Answer received."
             };
         }
+        return response;
+    },
 
+    startGame: (gameId) => {
+        let response = {
+            message: "Could not start game."
+        };
+        let game = gameHelper.getGame(gameId);
+        if (game && game.gameState && !game.gameState.hasGameStarted) {
+            game.gameState.startGame();
+            response = {
+                message: "Game started."
+            };
+        }
         return response;
     },
 
@@ -164,9 +122,63 @@ const gameHelper = {
             }
         }
 
+        return response;
+    },
+
+    emitGameStateChange: (gameId) => {
+        let game = gameHelper.getGame(gameId);
+        if (game) {
+            game.gameState.gameStateChangeEmitter.emit('game-state-changed', game.gameState.getUserViewOfGameState());
+        }
+    },
+
+    deleteGame: (gameId) => {
+        // TODO - eventually migrate old games elsewhere
+        // so that we maintain historical data. Don't just delete.
+        
+        gameHelper.getGame(gameId).gameStateChangeEmitter.removeAllListeners();
+        gameHelper.CURRENT_GAMES = gameHelper.CURRENT_GAMES.filter((game) => {
+            return game.id !== gameId;
+        });
+    },
+
+    getGame: (gameId) => {
+        let retVal = undefined;
+        for (var game of gameHelper.CURRENT_GAMES) {
+            if (game.id === gameId) {
+                retVal = game;
+                break;
+            }
+        }
+        return retVal;
+    },    
+
+    exitGame: (gameId, tenantId, userId) => {
+
+        // TODO validate input data here       
+        let response = {
+            message: "Could not remove user from game."
+        };
+
+        const game = gameHelper.getGame(gameId);
+        if (game) {
+            game.activePlayers = game.activePlayers.filter((activePlayer) => {
+                return activePlayer.id !== userId;
+            });
+    
+            console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
+                            
+            gameHelper.emitGameStateChange(gameId);
+
+            response = {
+                message: "User removed from game."
+            };
+        }
 
         return response;
-    }
+    },
+
+    
 };
 
 module.exports = gameHelper;

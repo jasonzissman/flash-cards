@@ -55,7 +55,7 @@ webSocketServer.on('connection', (webSocketConn) => {
     let response = gameHelper.processMessage(gameId, tenantId, userId, message);
 
     if (response.newUserJoined) {
-      gameHelper.getGame(gameId).gameStateChangeEmitter.on('game-state-changed', (gameState) => {
+      gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
         webSocketConn.send(JSON.stringify(gameState));
       });
     }
