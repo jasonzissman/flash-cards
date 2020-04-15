@@ -54,6 +54,8 @@ const gameHelper = {
             response = gameHelper.startGame(gameId);
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
+        } else if (message.action === "START_NEXT_ROUND") {
+            // TODO
         }
 
         return response;
@@ -64,13 +66,31 @@ const gameHelper = {
             message: "Could not submit answer."
         };
         let game = gameHelper.getGame(gameId);
-        if (game && game.gameState && !game.gameState.hasGameStarted) {
+        if (game && game.gameState && game.gameState.hasGameStarted) {
             game.gameState.userAnswered(userId, answer);
             response = {
                 message: "Answer received."
             };
-        }
+            if (gameHelper.haveAllPlayersAnswered(gameId)) {
+                game.gameState.endRound();
+            }
+        }        
         return response;
+    },
+
+    haveAllPlayersAnswered: (gameId) => {
+        let retVal = true;
+        let game = gameHelper.getGame(gameId);
+        if (game && game.gameState && game.gameState.hasGameStarted) {
+            let answers = game.gameState.getCurrentRoundAnswers();
+            let activePlayerIds = game.activePlayers.map((player) => {return player.id;});
+            for(id of activePlayerIds) {
+                if (answers[id] === undefined) {
+                    retVal = false;
+                }
+            }
+        }
+        return retVal;
     },
 
     startGame: (gameId) => {

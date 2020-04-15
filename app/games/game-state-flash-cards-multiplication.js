@@ -43,6 +43,10 @@ class GameStateFlashCardsMultiplication {
         this.emitGameStateChange();
     }
 
+    getCurrentRoundAnswers() {
+        return this.rounds[this.currentRoundIndex].answers;
+    }
+
     getUserViewOfGameState () {
         return {
             currentRoundIndex: this.currentRoundIndex,

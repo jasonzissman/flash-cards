@@ -56,15 +56,13 @@ webSocketServer.on('connection', (webSocketConn) => {
 
     if (response.newUserJoined) {
       gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
+        gameState.activePlayers = gameHelper.getGame(gameId).activePlayers;
         webSocketConn.send(JSON.stringify(gameState));
       });
     }
 
     webSocketConn.send(JSON.stringify(response));
   });
-
-
-
 
   // On connection ended
   webSocketConn.on('close', () => {
