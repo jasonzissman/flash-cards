@@ -138,6 +138,8 @@ const gameHelper = {
                     status: "Succesfully joined game",
                     newUserJoined: true,
                 };
+
+                gameHelper.emitGameStateChange(gameId);
                 console.log("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
             }
         }

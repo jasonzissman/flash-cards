@@ -54,11 +54,13 @@ webSocketServer.on('connection', (webSocketConn) => {
 
     let response = gameHelper.processMessage(gameId, tenantId, userId, message);
 
-    if (response.newUserJoined) {
+    if (response.newUserJoined && response.status === "Succesfully joined game") {
+      // Set up websocket listener and send current game state to user
       gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
         gameState.activePlayers = gameHelper.getGame(gameId).activePlayers;
         webSocketConn.send(JSON.stringify(gameState));
       });
+      webSocketConn.send(JSON.stringify(gameHelper.getGame(gameId).gameState.getUserViewOfGameState()));
     }
 
     webSocketConn.send(JSON.stringify(response));

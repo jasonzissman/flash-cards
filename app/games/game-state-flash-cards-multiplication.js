@@ -3,9 +3,10 @@ const GameStateChangeEmitter = require('./game-state-change-emitter');
 class GameStateFlashCardsMultiplication {
 
     constructor() {
-        this.currentRoundIndex = 0;
+        this.currentRound = 0;
         this.hasGameStarted = false;
-        this.rounds = []; 
+        this.activeRound = {};
+        this.pastRounds = []; 
         this.gameStateChangeEmitter = new GameStateChangeEmitter();
     }
     
@@ -23,19 +24,17 @@ class GameStateFlashCardsMultiplication {
         let roundDuration = 10; // seconds
         let expireTime = new Date();
         expireTime.setSeconds(expireTime.getSeconds() + roundDuration);
-        this.rounds[this.currentRoundIndex] = {
+        this.activeRound = {
             startTime: rightNow.getTime(),
             expireTime: expireTime.getTime(), // round cannot end past this time
             endTime: undefined, // time when round actually ended
             prompt: this.generateTwoRandomIntegers(12),
-            answers: {}, // {userId: { answerProvided, timeSubmitted}}
-            active: true, // Round is currently being played
+            answers: {}, // {userId: { answerProvided, timeSubmitted}}            
         };
 
         setTimeout(() => {
             // TODO - make sure this doesn't bleed in between rounds
-            let roundIndex = this.currentRoundIndex;
-            if (this.rounds[roundIndex].active) {
+            if (this.activeRound) {
                 this.endRound();
             }
         }, roundDuration * 1000);
@@ -44,25 +43,24 @@ class GameStateFlashCardsMultiplication {
     }
 
     getCurrentRoundAnswers() {
-        return this.rounds[this.currentRoundIndex].answers;
+        return this.activeRound.answers;
     }
 
     getUserViewOfGameState () {
         return {
-            currentRoundIndex: this.currentRoundIndex,
+            currentRound: this.currentRound,
             hasGameStarted: this.hasGameStarted,
-            rounds: this.rounds // TODO - FILTER
+            activeRound: this.activeRound,
+            pastRounds: this.pastRounds // TODO - FILTER
         };
     }
 
-    getCurrentRoundInfo() {
-        let currentRound = this.rounds[this.currentRoundIndex];
+    getCurrentRoundInfo() {        
         return {
-            startTime: currentRound.startTime,
-            endTime: currentRound.endTime,
-            prompt: currentRound.prompt,
-            answers: currentRound.answers, // FILTER
-            active: currentRound.active
+            startTime: this.activeRound.startTime,
+            endTime: this.activeRound.endTime,
+            prompt: this.activeRound.prompt,
+            answers: this.activeRound.answers, // FILTER            
         }
     }
 
@@ -72,10 +70,9 @@ class GameStateFlashCardsMultiplication {
 
     userAnswered(userId, answer) {
 
-        let currentRound = this.rounds[this.currentRoundIndex];
-        if (currentRound.active) {
+        if (this.activeRound) {
 
-            currentRound.answers[userId] = {
+            this.activeRound.answers[userId] = {
                 answerProvided: answer,
                 timeSubmitted: new Date().getTime()
             };
@@ -85,10 +82,11 @@ class GameStateFlashCardsMultiplication {
     }
 
     endRound() {
-        if (this.rounds[this.currentRoundIndex].active) {
-            this.rounds[this.currentRoundIndex].active = false;
-            this.rounds[this.currentRoundIndex].endTime = new Date().getTime();
-            this.currentRoundIndex++;
+        if (this.activeRound) {            
+            this.activeRound.endTime = new Date().getTime();
+            this.pastRounds.push(this.activeRound);
+            this.activeRound = undefined;
+            this.currentRound++;
             this.emitGameStateChange();
         }
     }
