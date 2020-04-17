@@ -55,7 +55,7 @@ const gameHelper = {
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
         } else if (message.action === "START_NEXT_ROUND") {
-            // TODO
+            response = gameHelper.startNextRound(gameId);
         }
 
         return response;
@@ -91,6 +91,18 @@ const gameHelper = {
             }
         }
         return retVal;
+    },
+    
+    startNextRound: (gameId) => {
+        // TODO - is this working?
+        let response = {
+            message: "Could not start next round."
+        };
+        let game = gameHelper.getGame(gameId);
+        if (game && game.gameState && !game.gameState.hasGameStarted) {
+            response = game.gameState.startNextRound();
+        }
+        return response;
     },
 
     startGame: (gameId) => {

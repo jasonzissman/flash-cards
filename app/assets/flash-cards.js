@@ -20,12 +20,12 @@ webSocket.onopen = (event) => {
 };
 
 function printMessage(message) {
-  document.getElementById("game-stuff").innerHTML = message + document.getElementById("game-stuff").innerHTML;
+  document.getElementById("game-stuff").innerHTML = "<pre>" + message + "</pre>" + document.getElementById("game-stuff").innerHTML;
   document.getElementById("game-stuff").innerHTML = "<hr/>" + document.getElementById("game-stuff").innerHTML;
 }
 
 webSocket.onmessage = (event) => {
-  printMessage(JSON.stringify(JSON.parse(event.data, undefined, 4)));
+  printMessage(JSON.stringify(JSON.parse(event.data), undefined, 4));
 };
 
 document.getElementById("create-game").onclick = () => {
@@ -49,4 +49,11 @@ document.getElementById("start-game").onclick = () => {
       action: "START_GAME"
     };
     webSocket.send(JSON.stringify(startGameObject));
+};
+
+document.getElementById("start-next-round").onclick = () => {
+  const startGameObject = {
+    action: "START_NEXT_ROUND"
+  };
+  webSocket.send(JSON.stringify(startGameObject));
 };

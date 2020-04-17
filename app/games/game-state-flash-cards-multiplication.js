@@ -5,7 +5,7 @@ class GameStateFlashCardsMultiplication {
     constructor() {
         this.currentRound = 0;
         this.hasGameStarted = false;
-        this.activeRound = {};
+        this.activeRound = undefined;
         this.pastRounds = []; 
         this.gameStateChangeEmitter = new GameStateChangeEmitter();
     }
@@ -20,26 +20,43 @@ class GameStateFlashCardsMultiplication {
     }
 
     startNextRound() {
-        let rightNow = new Date();
-        let roundDuration = 10; // seconds
-        let expireTime = new Date();
-        expireTime.setSeconds(expireTime.getSeconds() + roundDuration);
-        this.activeRound = {
-            startTime: rightNow.getTime(),
-            expireTime: expireTime.getTime(), // round cannot end past this time
-            endTime: undefined, // time when round actually ended
-            prompt: this.generateTwoRandomIntegers(12),
-            answers: {}, // {userId: { answerProvided, timeSubmitted}}            
+        
+        let response = {
+            status: "Could not start round. Previous round still in progress.",            
         };
 
-        setTimeout(() => {
-            // TODO - make sure this doesn't bleed in between rounds
-            if (this.activeRound) {
-                this.endRound();
-            }
-        }, roundDuration * 1000);
+        if (!this.activeRound) {
 
-        this.emitGameStateChange();
+            this.currentRound++;
+
+            let rightNow = new Date();
+            let roundDuration = 10; // seconds
+            let expireTime = new Date();
+            expireTime.setSeconds(expireTime.getSeconds() + roundDuration);
+            
+            this.activeRound = {
+                startTime: rightNow.getTime(),
+                expireTime: expireTime.getTime(), // round cannot end past this time
+                endTime: undefined, // time when round actually ended
+                prompt: this.generateTwoRandomIntegers(12),
+                answers: {}, // {userId: { answerProvided, timeSubmitted}}            
+            };
+    
+            setTimeout(() => {
+                // TODO - make sure this doesn't bleed in between rounds
+                if (this.activeRound) {
+                    this.endRound();
+                }
+            }, roundDuration * 1000);
+    
+            this.emitGameStateChange();
+
+            response = {
+                status: "Next Round Started.",            
+            };
+        }
+
+        return response;
     }
 
     getCurrentRoundAnswers() {
@@ -53,19 +70,6 @@ class GameStateFlashCardsMultiplication {
             activeRound: this.activeRound,
             pastRounds: this.pastRounds // TODO - FILTER
         };
-    }
-
-    getCurrentRoundInfo() {        
-        return {
-            startTime: this.activeRound.startTime,
-            endTime: this.activeRound.endTime,
-            prompt: this.activeRound.prompt,
-            answers: this.activeRound.answers, // FILTER            
-        }
-    }
-
-    getLastTenRoundsInfo() {
-        // return winners, question/prompts, right answers for last 10 rounds
     }
 
     userAnswered(userId, answer) {
@@ -85,8 +89,7 @@ class GameStateFlashCardsMultiplication {
         if (this.activeRound) {            
             this.activeRound.endTime = new Date().getTime();
             this.pastRounds.push(this.activeRound);
-            this.activeRound = undefined;
-            this.currentRound++;
+            this.activeRound = undefined;            
             this.emitGameStateChange();
         }
     }
