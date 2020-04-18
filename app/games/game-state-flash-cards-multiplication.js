@@ -7,6 +7,7 @@ class GameStateFlashCardsMultiplication {
         this.currentRound = 0;
         this.hasGameStarted = false;
         this.activeRound = undefined;
+        this.activeRoundTimerId = undefined;
         this.pastRounds = []; 
         this.gameStateChangeEmitter = new GameStateChangeEmitter();
     }
@@ -44,7 +45,7 @@ class GameStateFlashCardsMultiplication {
                 answers: {}, // {userId: { answerProvided, timeSubmitted}}            
             };
 
-            this.activeRound.timerId = setTimeout(() => {
+            this.activeRoundTimerId = setTimeout(() => {
                 if (this.activeRound) {
                     this.endRound();
                 }
@@ -69,7 +70,7 @@ class GameStateFlashCardsMultiplication {
             currentRound: this.currentRound,
             hasGameStarted: this.hasGameStarted,
             activeRound: this.activeRound,
-            pastRounds: this.pastRounds
+            pastTenRounds: this.pastRounds.slice(-10)
         };
     }
 
@@ -88,9 +89,9 @@ class GameStateFlashCardsMultiplication {
 
     endRound() {
         if (this.activeRound) {
-            if (this.activeRound.timerId) {
-                clearTimeout(this.activeRound.timerId);
-                this.activeRound.timerId = undefined;
+            if (this.activeRoundTimerId) {
+                clearTimeout(this.activeRoundTimerId);
+                this.activeRoundTimerId = undefined;
             }
             this.activeRound.endTime = new Date().getTime();
             this.pastRounds.push(this.activeRound);
