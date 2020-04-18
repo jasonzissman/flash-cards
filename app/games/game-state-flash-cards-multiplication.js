@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const GameStateChangeEmitter = require('./game-state-change-emitter');
 
 class GameStateFlashCardsMultiplication {
@@ -35,15 +36,15 @@ class GameStateFlashCardsMultiplication {
             expireTime.setSeconds(expireTime.getSeconds() + roundDuration);
             
             this.activeRound = {
+                id: uuidv4(),
                 startTime: rightNow.getTime(),
                 expireTime: expireTime.getTime(), // round cannot end past this time
                 endTime: undefined, // time when round actually ended
                 prompt: this.generateTwoRandomIntegers(12),
                 answers: {}, // {userId: { answerProvided, timeSubmitted}}            
             };
-    
-            setTimeout(() => {
-                // TODO - make sure this doesn't bleed in between rounds
+
+            this.activeRound.timerId = setTimeout(() => {
                 if (this.activeRound) {
                     this.endRound();
                 }
@@ -68,7 +69,7 @@ class GameStateFlashCardsMultiplication {
             currentRound: this.currentRound,
             hasGameStarted: this.hasGameStarted,
             activeRound: this.activeRound,
-            pastRounds: this.pastRounds // TODO - FILTER
+            pastRounds: this.pastRounds
         };
     }
 
@@ -86,7 +87,11 @@ class GameStateFlashCardsMultiplication {
     }
 
     endRound() {
-        if (this.activeRound) {            
+        if (this.activeRound) {
+            if (this.activeRound.timerId) {
+                clearTimeout(this.activeRound.timerId);
+                this.activeRound.timerId = undefined;
+            }
             this.activeRound.endTime = new Date().getTime();
             this.pastRounds.push(this.activeRound);
             this.activeRound = undefined;            

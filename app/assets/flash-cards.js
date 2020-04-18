@@ -57,3 +57,12 @@ document.getElementById("start-next-round").onclick = () => {
   };
   webSocket.send(JSON.stringify(startGameObject));
 };
+
+// SUBMIT_ANSWER
+document.getElementById("submit-answer").onclick = () => {
+  const startGameObject = {
+    action: "SUBMIT_ANSWER",
+    answer: "56"
+  };
+  webSocket.send(JSON.stringify(startGameObject));
+};

@@ -1,5 +1,5 @@
 const GameStateFlashCardsMultiplication = require('./game-state-flash-cards-multiplication');
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 const gameHelper = {
 
@@ -99,7 +99,7 @@ const gameHelper = {
             message: "Could not start next round."
         };
         let game = gameHelper.getGame(gameId);
-        if (game && game.gameState && !game.gameState.hasGameStarted) {
+        if (game && game.gameState && !game.gameState.activeRound) {
             response = game.gameState.startNextRound();
         }
         return response;
