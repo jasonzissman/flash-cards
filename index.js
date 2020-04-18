@@ -7,7 +7,7 @@ const webSocketPort = 3002;
 const gameHelper = require("./app/games/game-helper");
 
 // HTML/JS
-app.use(express.static('app'));
+app.use(express.static('ui'));
 
 // Create new game
 app.post('/:tenantId/games', (req, res) => {
@@ -57,8 +57,12 @@ webSocketServer.on('connection', (webSocketConn) => {
     if (response.newUserJoined && response.status === "Succesfully joined game") {
       // Set up websocket listener and send current game state to user
       gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
-        gameState.activePlayers = gameHelper.getGame(gameId).activePlayers;
-        webSocketConn.send(JSON.stringify(gameState));
+        let message = {
+          gameType: "FLASH_CARDS_MULTIPLICATION",
+          activePlayers: gameHelper.getGame(gameId).activePlayers,
+          gameState: gameState
+        };
+        webSocketConn.send(JSON.stringify(message));
       });
       webSocketConn.send(JSON.stringify(gameHelper.getGame(gameId).gameState.getUserViewOfGameState()));
     }
