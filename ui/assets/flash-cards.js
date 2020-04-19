@@ -20,14 +20,47 @@ webSocket.onopen = (event) => {
 };
 
 function printMessage(message) {
-  document.getElementById("game-stuff").innerHTML = "<pre>" + message + "</pre>" + document.getElementById("game-stuff").innerHTML;
-  document.getElementById("game-stuff").innerHTML = "<hr/>" + document.getElementById("game-stuff").innerHTML;
+  console.log(message);
 }
 
 webSocket.onmessage = (event) => {
   printMessage(JSON.stringify(JSON.parse(event.data), undefined, 4));
 };
 
+/////////////////////////////////////////
+
+var welcomeScreen = Backbone.Model.extend({
+  defaults: function () {
+    return {
+      title: "Game Name",
+      isVisible: true,
+      numberOtherPlayers: 0
+    };
+  },
+  setTitle: (newTitle) => {
+    this.save({ title: newTitle });
+  },
+  setNumOtherPlayers: (newNumberOtherPlayers) => {
+    this.save({ numberOtherPlayers: newNumberOtherPlayers });
+  },
+  setIsVisible: (newIsVisible) => {
+    this.save({ isVisible: newIsVisible });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////// 
 document.getElementById("create-game").onclick = () => {
   // TODO - delete this - to be called by launching party
 
@@ -37,7 +70,6 @@ document.getElementById("create-game").onclick = () => {
   xhr.open('POST', 'http://localhost:3001/tenant-123/games', false);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   xhr.onload = function () {
-    
     printMessage(this.responseText);
   };
   xhr.send('');
@@ -45,10 +77,10 @@ document.getElementById("create-game").onclick = () => {
 
 
 document.getElementById("start-game").onclick = () => {
-    const startGameObject = {
-      action: "START_GAME"
-    };
-    webSocket.send(JSON.stringify(startGameObject));
+  const startGameObject = {
+    action: "START_GAME"
+  };
+  webSocket.send(JSON.stringify(startGameObject));
 };
 
 document.getElementById("start-next-round").onclick = () => {

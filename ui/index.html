@@ -1,17 +1,20 @@
 <html>
     <head>
         <title>Flash Cards</title>
+        <link rel="stylesheet" type="text/css" href="assets/style.css" />
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <h3>Multiplication</h3>
         <section id="game-controls">
-            <button id="create-game">Create Game</button>
+            <button id="create-game">Create Game</button>            
+        </section>
+        <section id="welcome-screen">
+            <p id="welcome-message-num-players">You are the only one in the game.</p>
             <button id="start-game">Start Game</button>
+        </section>
+        <section id="game-screen" style="display:none;">
             <button id="start-next-round">Start Next Round</button>
             <button id="submit-answer">Submit Answer</button>
-        </section>
-        <section id="game-stuff">
-            
         </section>
         <script type="text/javascript" src="assets/flash-cards.js"></script>
     </body>
