@@ -2,65 +2,44 @@ const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
 const userId = new URLSearchParams(window.location.search).get('userId');
 
-// Websocket against /{tenantId}/games/{gameId}/join
+var HAS_JOINED_GAME = false;
+var GAME_STATE = undefined;
+
 // TODO - eventually use wss, not ws
 const webSocketUrl = `ws://localhost:3002`;
 const webSocket = new WebSocket(webSocketUrl);
 
 webSocket.onopen = (event) => {
 
-  // join game
-  const joinGameObject = {
-    action: "JOIN_GAME",
-    tenantId: tenantId,
-    gameId: gameId,
-    userId: userId
-  };
-  webSocket.send(JSON.stringify(joinGameObject));
 };
 
 function printMessage(message) {
   console.log(message);
 }
 
+function updateUI() {
+
+  if (!HAS_JOINED_GAME) {
+    // Show #welcome-screen
+    // Hide #game-screen
+  } else {
+    // Hide #welcome-screen
+    // Show #game-screen
+    // Update game UI
+  }
+
+}
+
 webSocket.onmessage = (event) => {
-  printMessage(JSON.stringify(JSON.parse(event.data), undefined, 4));
+  let serverMessage = JSON.parse(event.data);
+  if(serverMessage.gameState) {
+    GAME_STATE = serverMessage.gameState;
+    updateUI();
+  }
+  printMessage(JSON.stringify(serverMessage, undefined, 4));
 };
 
-/////////////////////////////////////////
 
-var welcomeScreen = Backbone.Model.extend({
-  defaults: function () {
-    return {
-      title: "Game Name",
-      isVisible: true,
-      numberOtherPlayers: 0
-    };
-  },
-  setTitle: (newTitle) => {
-    this.save({ title: newTitle });
-  },
-  setNumOtherPlayers: (newNumberOtherPlayers) => {
-    this.save({ numberOtherPlayers: newNumberOtherPlayers });
-  },
-  setIsVisible: (newIsVisible) => {
-    this.save({ isVisible: newIsVisible });
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////// 
 document.getElementById("create-game").onclick = () => {
   // TODO - delete this - to be called by launching party
 
@@ -75,12 +54,25 @@ document.getElementById("create-game").onclick = () => {
   xhr.send('');
 };
 
-
+// TODO really this is join game (and create/start if not already there)
 document.getElementById("start-game").onclick = () => {
-  const startGameObject = {
-    action: "START_GAME"
+
+  // TODO why differentiate create game from join game from start game? should all be the same.
+
+  // // start game
+  // const startGameObject = {
+  //   action: "START_GAME"
+  // };
+  // webSocket.send(JSON.stringify(startGameObject));
+
+  // join game
+  const joinGameObject = {
+    action: "JOIN_GAME",
+    tenantId: tenantId,
+    gameId: gameId,
+    userId: userId
   };
-  webSocket.send(JSON.stringify(startGameObject));
+  webSocket.send(JSON.stringify(joinGameObject));
 };
 
 document.getElementById("start-next-round").onclick = () => {
@@ -90,7 +82,6 @@ document.getElementById("start-next-round").onclick = () => {
   webSocket.send(JSON.stringify(startGameObject));
 };
 
-// SUBMIT_ANSWER
 document.getElementById("submit-answer").onclick = () => {
   const startGameObject = {
     action: "SUBMIT_ANSWER",

@@ -9,15 +9,18 @@ const gameHelper = require("./app/games/game-helper");
 // HTML/JS
 app.use(express.static('ui'));
 
+// TODO why differentiate create game from join game from start game? should all be the same.
 // Create new game
-app.post('/:tenantId/games', (req, res) => {
-  let tenantId = req.params.tenantId;
-  const gameId = gameHelper.createNewGame(tenantId);
+// app.post('/:tenantId/games', (req, res) => {
 
-  res.status(200).json({
-    gameId: gameId
-  });
-});
+
+//   let tenantId = req.params.tenantId;
+//   const gameId = gameHelper.createNewGame(tenantId);
+
+//   res.status(200).json({
+//     gameId: gameId
+//   });
+// });
 
 // See active games for tenant
 app.get('/:tenantId/active-games', (req, res) => {
@@ -36,6 +39,12 @@ webSocketServer.on('connection', (webSocketConn) => {
   webSocketConn.on('message', (messageStr) => {
     let message = JSON.parse(messageStr);
     console.log('received: ' + JSON.stringify(message, undefined, 4));
+
+    // TODO - implement this!
+    // If trying to join game but no ID, create a game
+    // if (message.action === "JOIN_GAME" && !message.gameId && message.tenantId) {
+    //  message.gameId = gameHelper.createNewGame(message.tenantId); 
+    // }
 
     // Associate this connection with the game/tenant/user
     if (!webSocketConn.sessionInfo) {
