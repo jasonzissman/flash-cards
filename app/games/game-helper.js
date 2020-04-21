@@ -109,20 +109,6 @@ const gameHelper = {
         return response;
     },
 
-    // startGame: (gameId) => {
-    //     let response = {
-    //         message: "Could not start game."
-    //     };
-    //     let game = gameHelper.getGame(gameId);
-    //     if (game && game.gameState && !game.gameState.hasGameStarted) {
-    //         game.gameState.startGame();
-    //         response = {
-    //             message: "Game started."
-    //         };
-    //     }
-    //     return response;
-    // },
-
     joinGame: (gameId, tenantId, userId, displayName) => {
 
         let response = {

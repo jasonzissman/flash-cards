@@ -9,25 +9,20 @@ const gameHelper = require("./app/games/game-helper");
 // HTML/JS
 app.use(express.static('ui'));
 
-// TODO why differentiate create game from join game from start game? should all be the same.
-// Create new game
-// app.post('/:tenantId/games', (req, res) => {
-
-
-//   let tenantId = req.params.tenantId;
-//   const gameId = gameHelper.createNewGame(tenantId);
-
-//   res.status(200).json({
-//     gameId: gameId
-//   });
-// });
-
 // See active games for tenant
 app.get('/:tenantId/active-games', (req, res) => {
   let tenantId = req.params.tenantId;
   let activeGamesForTenant = gameHelper.getActiveGamesForTenant(tenantId);
   res.status(200).json(activeGamesForTenant);
 });
+
+let formatWebSocketMessage = (gameId, gameState) => {
+  return {
+    gameType: "FLASH_CARDS_MULTIPLICATION",
+    activePlayers: gameHelper.getGame(gameId).activePlayers,
+    gameState: gameState
+  };
+}
 
 // Handle websocket connection
 const webSocketServer = new WebSocket.Server({ port: webSocketPort });
@@ -37,14 +32,14 @@ webSocketServer.on('connection', (webSocketConn) => {
 
   // On message received
   webSocketConn.on('message', (messageStr) => {
-    let message = JSON.parse(messageStr);
-    console.log('received: ' + JSON.stringify(message, undefined, 4));
+    // TODO - validate message
 
-    // TODO - implement this!
+    let message = JSON.parse(messageStr);
+
     // If trying to join game but no ID, create a game
-    // if (message.action === "JOIN_GAME" && !message.gameId && message.tenantId) {
-    //  message.gameId = gameHelper.createNewGame(message.tenantId); 
-    // }
+    if (message.action === "JOIN_GAME" && !message.gameId && message.tenantId) {
+      message.gameId = gameHelper.createNewGame(message.tenantId); 
+    }
 
     // Associate this connection with the game/tenant/user
     if (!webSocketConn.sessionInfo) {
@@ -66,14 +61,12 @@ webSocketServer.on('connection', (webSocketConn) => {
     if (response.newUserJoined && response.status === "Succesfully joined game") {
       // Set up websocket listener and send current game state to user
       gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
-        let message = {
-          gameType: "FLASH_CARDS_MULTIPLICATION",
-          activePlayers: gameHelper.getGame(gameId).activePlayers,
-          gameState: gameState
-        };
+        let message = formatWebSocketMessage(gameId, gameState);
         webSocketConn.send(JSON.stringify(message));
       });
-      webSocketConn.send(JSON.stringify(gameHelper.getGame(gameId).gameState.getUserViewOfGameState()));
+      
+      let currentGameState = gameHelper.getGame(gameId).gameState.getUserViewOfGameState();
+      webSocketConn.send(JSON.stringify(formatWebSocketMessage(gameId, currentGameState)));
     }
 
     webSocketConn.send(JSON.stringify(response));
