@@ -70,11 +70,13 @@ const gameHelper = {
         let game = gameHelper.getGame(gameId);
         if (game && game.gameState && game.gameState.hasGameStarted) {
             game.gameState.userAnswered(userId, answer);
+            // TODO - update score here if answer was correct
             response = {
                 message: "Answer received."
             };
             if (gameHelper.haveAllPlayersAnswered(gameId)) {
                 game.gameState.endRound();
+                // TODO - update score here with whoever answered first
             }
         }
         return response;

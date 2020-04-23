@@ -45,6 +45,10 @@ function updateUI(serverMessage) {
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRound;
+    if (gameState.activeRound) {
+      document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
+
+    }
   }
 }
 
@@ -116,7 +120,7 @@ document.getElementById("start-next-round").onclick = () => {
 document.getElementById("submit-answer").onclick = () => {
   const startGameObject = {
     action: "SUBMIT_ANSWER",
-    answer: "56"
+    answer: document.getElementById("answer-field").value
   };
   webSocket.send(JSON.stringify(startGameObject));
 };
