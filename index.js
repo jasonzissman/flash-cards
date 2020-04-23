@@ -16,13 +16,31 @@ app.get('/:tenantId/active-games', (req, res) => {
   res.status(200).json(activeGamesForTenant);
 });
 
-let formatWebSocketMessage = (gameId, gameState) => {
-  return {
-    gameType: "FLASH_CARDS_MULTIPLICATION",
-    activePlayers: gameHelper.getGame(gameId).activePlayers,
-    gameState: gameState
+let initializeConnection = (message, webSocketConn) => {
+  let gameId = message.gameId;
+  if (!gameId) {
+    gameId = gameHelper.createNewGame(message.tenantId);
+  }
+
+  // TODO - eventually, instead of trusting client, establish token generation scheme
+  // where token is associated with these points.
+  webSocketConn.sessionInfo = {
+    tenantId: message.tenantId,
+    gameId: gameId,
+    userId: message.userId
   };
-}
+
+  // Set up websocket listener and send current game state to user
+  gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
+    let message = {
+      gameType: "FLASH_CARDS_MULTIPLICATION",
+      messageType: "GAME_STATE_CHANGE",
+      activePlayers: gameHelper.getGame(gameId).activePlayers,
+      gameState: gameState
+    }
+    webSocketConn.send(JSON.stringify(message));
+  });
+};
 
 // Handle websocket connection
 const webSocketServer = new WebSocket.Server({ port: webSocketPort });
@@ -32,24 +50,14 @@ webSocketServer.on('connection', (webSocketConn) => {
 
   // On message received
   webSocketConn.on('message', (messageStr) => {
-    // TODO - validate message
+
+    // TODO - validate client input
 
     let message = JSON.parse(messageStr);
 
     // If trying to join game but no ID, create a game
-    if (message.action === "JOIN_GAME" && !message.gameId && message.tenantId) {
-      message.gameId = gameHelper.createNewGame(message.tenantId); 
-    }
-
-    // Associate this connection with the game/tenant/user
-    if (!webSocketConn.sessionInfo) {
-      // TODO - eventually, instead of trusting client, establish token generation scheme
-      // where token is associated with these points.
-      webSocketConn.sessionInfo = {
-        tenantId: message.tenantId,
-        gameId: message.gameId,
-        userId: message.userId
-      };
+    if (message.action === "INITIALIZE_CONNECTION") {
+      initializeConnection(message, webSocketConn);
     }
 
     const gameId = webSocketConn.sessionInfo.gameId;
@@ -58,28 +66,20 @@ webSocketServer.on('connection', (webSocketConn) => {
 
     let response = gameHelper.processMessage(gameId, tenantId, userId, message);
 
-    if (response.newUserJoined && response.status === "Succesfully joined game") {
-      // Set up websocket listener and send current game state to user
-      gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
-        let message = formatWebSocketMessage(gameId, gameState);
-        webSocketConn.send(JSON.stringify(message));
-      });
-      
-      let currentGameState = gameHelper.getGame(gameId).gameState.getUserViewOfGameState();
-      webSocketConn.send(JSON.stringify(formatWebSocketMessage(gameId, currentGameState)));
-    }
-
     webSocketConn.send(JSON.stringify(response));
   });
 
   // On connection ended
+  // TODO - TEST IF THIS IS DOING WHAT YOU THINK
   webSocketConn.on('close', () => {
     console.log("WS conn closed");
-    const gameId = webSocketConn.sessionInfo.gameId;
-    const tenantId = webSocketConn.sessionInfo.tenantId;
-    const userId = webSocketConn.sessionInfo.userId;
-    let response = gameHelper.exitGame(gameId, tenantId, userId);
-    webSocketConn.send(JSON.stringify(response));
+    if (webSocketConn.sessionInfo) {
+      const gameId = webSocketConn.sessionInfo.gameId;
+      const tenantId = webSocketConn.sessionInfo.tenantId;
+      const userId = webSocketConn.sessionInfo.userId;
+      let response = gameHelper.exitGame(gameId, tenantId, userId);
+      webSocketConn.send(JSON.stringify(response));
+    }
   });
 
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.

@@ -54,8 +54,6 @@ const gameHelper = {
                 game.gameState.startGame();
             }
             response = gameHelper.joinGame(gameId, tenantId, userId, displayName);
-            // } else if (message.action === "START_GAME") {
-            //     response = gameHelper.startGame(gameId);
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
         } else if (message.action === "START_NEXT_ROUND") {
