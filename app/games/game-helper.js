@@ -70,13 +70,37 @@ const gameHelper = {
         let game = gameHelper.getGame(gameId);
         if (game && game.gameState && game.gameState.hasGameStarted) {
             game.gameState.userAnswered(userId, answer);
-            // TODO - update score here if answer was correct
+            // TODO - Must be a smarter way (filter?) to do this instead of for loop
+            let correctAnswer = game.gameState.getCorrectAnswerForActiveRound();
+            // Double equals (not triple) on purpose to allow for type coercion
+            if (answer == correctAnswer) {
+                let isFirstToAnswerCorrectly = true;
+                for (let [answerUserId, answer] of Object.entries(game.gameState.activeRound.answers)) {
+                    // Double equals (not triple) on purpose to allow for type coercion
+                    if (answer.answerProvided == correctAnswer && answerUserId != userId) {
+                        isFirstToAnswerCorrectly = false;
+                        break;
+                    }
+                }
+                if (isFirstToAnswerCorrectly) {
+                    gameHelper.emitNotificationToUser(gameId, { type: "USER_ANSWERED_CORRECTLY_FIRST" });
+                }
+                for (var activePlayer of game.activePlayers) {
+                    if (activePlayer.id === userId) {
+                        activePlayer.score += 1;
+                        if (isFirstToAnswerCorrectly) {
+                            activePlayer.score += 1;
+                        }
+                        break;
+                    }
+                }
+
+            }
             response = {
                 message: "Answer received."
             };
             if (gameHelper.haveAllPlayersAnswered(gameId)) {
                 game.gameState.endRound();
-                // TODO - update score here with whoever answered first
             }
         }
         return response;
@@ -133,7 +157,8 @@ const gameHelper = {
             if (!playerAlreadyJoined) {
                 game.activePlayers.push({
                     id: userId,
-                    displayName: displayName
+                    displayName: displayName,
+                    score: 0
                 });
 
                 response = {
@@ -153,6 +178,15 @@ const gameHelper = {
         let game = gameHelper.getGame(gameId);
         if (game) {
             game.gameState.gameStateChangeEmitter.emit('game-state-changed', game.gameState.getUserViewOfGameState());
+        }
+    },
+
+    emitNotificationToUser: (gameId, notification) => {
+        // TODO - this use case shows that this is not really a 'game state change' emitter,
+        // but a more generic game event emitter. Refactor name?
+        let game = gameHelper.getGame(gameId);
+        if (game) {
+            game.gameState.gameStateChangeEmitter.emit('notify-user', notification);
         }
     },
 

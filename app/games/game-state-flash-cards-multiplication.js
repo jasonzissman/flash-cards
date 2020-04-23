@@ -87,6 +87,12 @@ class GameStateFlashCardsMultiplication {
         }
     }
 
+    getCorrectAnswerForActiveRound() {
+        if(this.activeRound) {
+            return this.activeRound.prompt[0] * this.activeRound.prompt[1];
+        }
+    }
+
     endRound() {
         if (this.activeRound) {
             if (this.activeRoundTimerId) {

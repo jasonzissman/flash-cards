@@ -2,6 +2,8 @@ const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
 const userId = new URLSearchParams(window.location.search).get('userId');
 
+
+
 // TODO - eventually use wss, not ws
 const webSocketUrl = `ws://localhost:3002`;
 const webSocket = new WebSocket(webSocketUrl);
@@ -118,6 +120,9 @@ document.getElementById("start-next-round").onclick = () => {
 };
 
 document.getElementById("submit-answer").onclick = () => {
+
+// TODO - show message when user answeres correctly first
+
   const startGameObject = {
     action: "SUBMIT_ANSWER",
     answer: document.getElementById("answer-field").value

@@ -40,6 +40,15 @@ let initializeConnection = (message, webSocketConn) => {
     }
     webSocketConn.send(JSON.stringify(message));
   });
+
+   gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('notify-user', (notification) => {
+    let message = {
+      gameType: "FLASH_CARDS_MULTIPLICATION",
+      messageType: "NOTIFY_USER",
+      notification: notification
+    }
+    webSocketConn.send(JSON.stringify(message));
+  });
 };
 
 // Handle websocket connection
