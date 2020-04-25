@@ -41,19 +41,18 @@ const gameHelper = {
     processMessage: (gameId, tenantId, userId, message) => {
 
         // TODO validate input data here
+        // TODO Important! Validate all user-provided date, including display name and answer
 
         let response = {
             message: "Action unknown."
         };
 
         if (message.action === "JOIN_GAME") {
-            // TODO - get display name
-            let displayName = userId;
             let game = gameHelper.getGame(gameId);
             if (game && game.gameState && !game.gameState.hasGameStarted) {
                 game.gameState.startGame();
             }
-            response = gameHelper.joinGame(gameId, tenantId, userId, displayName);
+            response = gameHelper.joinGame(gameId, tenantId, userId, message.displayName);
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
         } else if (message.action === "START_NEXT_ROUND") {
@@ -74,14 +73,19 @@ const gameHelper = {
             let correctAnswer = game.gameState.getCorrectAnswerForActiveRound();
             // Double equals (not triple) on purpose to allow for type coercion
             if (answer == correctAnswer) {
-                let isFirstToAnswerCorrectly = true;
-                for (let [answerUserId, answer] of Object.entries(game.gameState.activeRound.answers)) {
-                    // Double equals (not triple) on purpose to allow for type coercion
-                    if (answer.answerProvided == correctAnswer && answerUserId != userId) {
-                        isFirstToAnswerCorrectly = false;
-                        break;
+                
+                let isFirstToAnswerCorrectly = false;
+                if (game.activePlayers.length > 1) {
+                    isFirstToAnswerCorrectly = true;
+                    for (let [answerUserId, answer] of Object.entries(game.gameState.activeRound.answers)) {
+                        // Double equals (not triple) on purpose to allow for type coercion
+                        if (answer.answerProvided == correctAnswer && answerUserId != userId) {
+                            isFirstToAnswerCorrectly = false;
+                            break;
+                        }
                     }
                 }
+
                 if (isFirstToAnswerCorrectly) {
                     gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY_FIRST"});
                 } else {

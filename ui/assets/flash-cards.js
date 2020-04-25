@@ -55,7 +55,7 @@ function updateUI(serverMessage) {
 
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
-  if (shouldShowWelcomeScreen(activePlayers)) {
+  if (shouldShowWelcomeScreen(activePlayers)) {   
     document.getElementById("game-screen").style.display = "none";
     document.getElementById("welcome-screen").style.display = "block";
   } else {
@@ -116,11 +116,14 @@ webSocket.onmessage = (event) => {
 };
 
 document.getElementById("join-game").onclick = () => {
+  // TODO - validate user input. Set maximum length and alphanumeric only
+  localStorage.setItem("displayName", document.getElementById("display-name").value);
   const joinGameObject = {
     action: "JOIN_GAME",
     tenantId: tenantId,
     gameId: gameId,
-    userId: userId
+    userId: userId,
+    displayName: document.getElementById("display-name").value
   };
   webSocket.send(JSON.stringify(joinGameObject));
 };
@@ -140,3 +143,5 @@ document.getElementById("submit-answer").onclick = () => {
   };
   webSocket.send(JSON.stringify(submitAnswerObject));
 };
+
+document.getElementById("display-name").value = localStorage.getItem("displayName");
