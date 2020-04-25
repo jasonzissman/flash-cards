@@ -73,6 +73,13 @@ function updateUI(serverMessage) {
       document.getElementById("submit-answer").style.display = "none";
     }
   }
+  // #scoreboard-list
+  // <li>Player 1 (34 points)</li>
+  var scoreboardHtml = ""
+  for (var player of activePlayers) {
+    scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
+  }
+  document.getElementById("scoreboard-list").innerHTML = scoreboardHtml;
 }
 
 function notifyUser(notification) {
