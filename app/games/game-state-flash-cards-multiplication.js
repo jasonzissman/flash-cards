@@ -62,7 +62,11 @@ class GameStateFlashCardsMultiplication {
     }
 
     getCurrentRoundAnswers() {
-        return this.activeRound.answers;
+        let retVal = undefined;
+        if (this.activeRound) {
+            retVal = this.activeRound.answers;
+        }
+        return retVal;
     }
 
     getUserViewOfGameState () {

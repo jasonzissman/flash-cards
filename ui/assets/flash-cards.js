@@ -17,6 +17,9 @@ webSocket.onopen = () => {
   webSocket.send(JSON.stringify(initConnObject));
 };
 
+////////////////////////////////////////////////
+////// UI CODE - belongs somewhere else
+///////////////////////////////////////////////
 
 function printMessage(message) {
   console.log(message);
@@ -54,6 +57,25 @@ function updateUI(serverMessage) {
   }
 }
 
+function notifyUser(notification) {
+  if (notification.type === "USER_ANSWERED_CORRECTLY_FIRST") {    
+    document.getElementById("notification-title").innerHTML = "+2 POINTS";
+    document.getElementById("notification-message").innerHTML = "First Correct Answer!";
+    confetti(document.getElementById("submit-answer"));
+  } else if (notification.type === "USER_ANSWERED_CORRECTLY") {
+    document.getElementById("notification-title").innerHTML = "+1 POINTS";
+    document.getElementById("notification-message").innerHTML = "Correct!";
+    confetti(document.getElementById("submit-answer"));
+  }
+  document.getElementById("notification-holder").classList.add('visible');
+  setTimeout(() => {
+    document.getElementById("notification-holder").classList.remove('visible');
+  }, 2000);
+}
+
+////////////////////////////////////////////////
+////// END OF UI CODE
+///////////////////////////////////////////////
 
 // {
 //   "gameType": "FLASH_CARDS_MULTIPLICATION",
@@ -94,15 +116,17 @@ function updateUI(serverMessage) {
 
 webSocket.onmessage = (event) => {
   let serverMessage = JSON.parse(event.data);
-  if (serverMessage && serverMessage.messageType === "GAME_STATE_CHANGE") {
-    updateUI(serverMessage);
+  if (serverMessage) {
+    if (serverMessage.messageType === "GAME_STATE_CHANGE") {
+      updateUI(serverMessage);
+    } else if (serverMessage.messageType === "NOTIFY_USER") {
+      notifyUser(serverMessage.notification);
+    }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
 };
 
 document.getElementById("join-game").onclick = () => {
-
-  // join game
   const joinGameObject = {
     action: "JOIN_GAME",
     tenantId: tenantId,
@@ -120,12 +144,9 @@ document.getElementById("start-next-round").onclick = () => {
 };
 
 document.getElementById("submit-answer").onclick = () => {
-
-// TODO - show message when user answeres correctly first
-
-  const startGameObject = {
+  const submitAnswerObject = {
     action: "SUBMIT_ANSWER",
     answer: document.getElementById("answer-field").value
   };
-  webSocket.send(JSON.stringify(startGameObject));
+  webSocket.send(JSON.stringify(submitAnswerObject));
 };

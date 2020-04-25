@@ -83,7 +83,9 @@ const gameHelper = {
                     }
                 }
                 if (isFirstToAnswerCorrectly) {
-                    gameHelper.emitNotificationToUser(gameId, { type: "USER_ANSWERED_CORRECTLY_FIRST" });
+                    gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY_FIRST"});
+                } else {
+                    gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY" });
                 }
                 for (var activePlayer of game.activePlayers) {
                     if (activePlayer.id === userId) {
@@ -112,9 +114,12 @@ const gameHelper = {
         if (game && game.gameState && game.gameState.hasGameStarted) {
             let answers = game.gameState.getCurrentRoundAnswers();
             let activePlayerIds = game.activePlayers.map((player) => { return player.id; });
-            for (id of activePlayerIds) {
-                if (answers[id] === undefined) {
-                    retVal = false;
+            if (answers && activePlayerIds && activePlayerIds.length > 0) {
+                for (id of activePlayerIds) {
+                    if (answers[id] === undefined) {
+                        retVal = false;
+                        break;
+                    }
                 }
             }
         }
@@ -181,12 +186,12 @@ const gameHelper = {
         }
     },
 
-    emitNotificationToUser: (gameId, notification) => {
+    emitNotificationToUser: (gameId, userId, notification) => {
         // TODO - this use case shows that this is not really a 'game state change' emitter,
         // but a more generic game event emitter. Refactor name?
         let game = gameHelper.getGame(gameId);
         if (game) {
-            game.gameState.gameStateChangeEmitter.emit('notify-user', notification);
+            game.gameState.gameStateChangeEmitter.emit('notify-user', userId, notification);
         }
     },
 

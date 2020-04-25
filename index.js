@@ -30,7 +30,7 @@ let initializeConnection = (message, webSocketConn) => {
     userId: message.userId
   };
 
-  // Set up websocket listener and send current game state to user
+  // Alert user of updates to the game
   gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', (gameState) => {
     let message = {
       gameType: "FLASH_CARDS_MULTIPLICATION",
@@ -41,13 +41,17 @@ let initializeConnection = (message, webSocketConn) => {
     webSocketConn.send(JSON.stringify(message));
   });
 
-   gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('notify-user', (notification) => {
-    let message = {
-      gameType: "FLASH_CARDS_MULTIPLICATION",
-      messageType: "NOTIFY_USER",
-      notification: notification
+  gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('notify-user', (userId, notification) => {
+    // TODO - confirm that this only is sent to intended user,
+    // not all users or other users.
+    if (webSocketConn.sessionInfo.userId === userId) {
+      let message = {
+        gameType: "FLASH_CARDS_MULTIPLICATION",
+        messageType: "NOTIFY_USER",
+        notification: notification
+      }
+      webSocketConn.send(JSON.stringify(message));
     }
-    webSocketConn.send(JSON.stringify(message));
   });
 };
 
