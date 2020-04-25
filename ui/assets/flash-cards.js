@@ -24,16 +24,23 @@ webSocket.onopen = () => {
 function printMessage(message) {
   console.log(message);
 }
-
-function hasPlayerJoinedGame(activePlayers) {
-  let retVal = false;
+function getCurrentPlayerFromActivePlayers(activePlayers) {
+  let retVal = undefined;
   for (var player of activePlayers) {
     if (player.id === userId) {
-      retVal = true;
+      retVal = player;
       break;
     }
   }
   return retVal;
+}
+
+function hasPlayerJoinedGame(activePlayers) {
+  return getCurrentPlayerFromActivePlayers(activePlayers) !== undefined;
+}
+
+function getCurrentUserScore(activePlayers) {
+  return getCurrentPlayerFromActivePlayers(activePlayers).score;
 }
 
 function shouldShowWelcomeScreen(activePlayers) {
@@ -41,6 +48,11 @@ function shouldShowWelcomeScreen(activePlayers) {
 }
 
 function updateUI(serverMessage) {
+  // TODO - disable submit button if current player has correctly answered      
+  // TODO - put in big timer notifying user when next round starts
+  // TODO - put in cool block graphics to show users why answer is correct
+  // TODO - put in countdown timer for round
+
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
   if (shouldShowWelcomeScreen(activePlayers)) {
@@ -50,22 +62,28 @@ function updateUI(serverMessage) {
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRound;
+    document.getElementById("user-score").innerHTML = getCurrentUserScore(activePlayers) + " points";
+
     if (gameState.activeRound) {
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
-
+      document.getElementById("submit-answer").style.display = "inline-block";
+      document.getElementById("start-next-round").style.display = "none";
+    } else {
+      document.getElementById("start-next-round").style.display = "inline-block";
+      document.getElementById("submit-answer").style.display = "none";
     }
   }
 }
 
 function notifyUser(notification) {
-  if (notification.type === "USER_ANSWERED_CORRECTLY_FIRST") {    
+  if (notification.type === "USER_ANSWERED_CORRECTLY_FIRST") {
     document.getElementById("notification-title").innerHTML = "+2 POINTS";
     document.getElementById("notification-message").innerHTML = "First Correct Answer!";
-    confetti(document.getElementById("submit-answer"));
+    confetti(document.getElementById("confetti-holder"));
   } else if (notification.type === "USER_ANSWERED_CORRECTLY") {
-    document.getElementById("notification-title").innerHTML = "+1 POINTS";
-    document.getElementById("notification-message").innerHTML = "Correct!";
-    confetti(document.getElementById("submit-answer"));
+    document.getElementById("notification-title").innerHTML = "+1 POINT";
+    document.getElementById("notification-message").innerHTML = "Correct Answer!";
+    confetti(document.getElementById("confetti-holder"));
   }
   document.getElementById("notification-holder").classList.add('visible');
   setTimeout(() => {
@@ -77,42 +95,6 @@ function notifyUser(notification) {
 ////// END OF UI CODE
 ///////////////////////////////////////////////
 
-// {
-//   "gameType": "FLASH_CARDS_MULTIPLICATION",
-//   "activePlayers": [
-//       {
-//           "id": "user-555",
-//           "displayName": "user-555"
-//       }
-//   ],
-//   "gameState": {
-//       "currentRound": 2,
-//       "hasGameStarted": true,
-//       "activeRound": {
-//           "id": "e70613f3-db99-473c-bd57-b7ed8893c01c",
-//           "startTime": 1587641240309,
-//           "expireTime": 1587641250309,
-//           "prompt": [
-//               12,
-//               2
-//           ],
-//           "answers": {}
-//       },
-//       "pastTenRounds": [
-//           {
-//               "id": "88d59466-9364-44d0-b6eb-cc92c05eb9ad",
-//               "startTime": 1587641141750,
-//               "expireTime": 1587641151750,
-//               "endTime": 1587641151766,
-//               "prompt": [
-//                   9,
-//                   12
-//               ],
-//               "answers": {}
-//           }
-//       ]
-//   }
-// }
 
 webSocket.onmessage = (event) => {
   let serverMessage = JSON.parse(event.data);
@@ -137,6 +119,7 @@ document.getElementById("join-game").onclick = () => {
 };
 
 document.getElementById("start-next-round").onclick = () => {
+  // 
   const startGameObject = {
     action: "START_NEXT_ROUND"
   };

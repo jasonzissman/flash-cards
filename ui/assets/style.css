@@ -24,6 +24,12 @@ body {
 #question-prompt {
   font-size: 3em;
 }
+#confetti-holder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 #notification-holder {
   font-weight: 900;
   visibility: hidden;

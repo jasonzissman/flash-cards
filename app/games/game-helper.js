@@ -98,6 +98,7 @@ const gameHelper = {
                 }
 
             }
+            gameHelper.emitGameStateChange(gameId);
             response = {
                 message: "Answer received."
             };
