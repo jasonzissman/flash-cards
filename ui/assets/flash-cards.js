@@ -67,12 +67,22 @@ function turnOffRoundCountdownTimer() {
   }
 }
 
+function turnOnNotificationMessage() {
+  document.getElementById("notification-holder").classList.add('visible');
+  document.getElementById("notification-overlay").classList.add('visible');
+}
+
+function turnOffNotificationMessage() {
+  document.getElementById("notification-holder").classList.remove('visible');
+  document.getElementById("notification-overlay").classList.remove('visible');
+}
+
 let nextRoundCountdownTimerIntervalId;
 function updateNextRoundCountdownTimer(nextRoundStartTime) {
   if (nextRoundStartTime !== undefined && nextRoundCountdownTimerIntervalId === undefined) {
 
     document.getElementById("notification-title").innerHTML = "Next Round Starting";
-    document.getElementById("notification-holder").classList.add('visible');
+    turnOnNotificationMessage();
 
     nextRoundCountdownTimerIntervalId = setInterval(() => {
       let timeLeft = nextRoundStartTime - new Date().getTime();
@@ -88,7 +98,7 @@ function turnOffNextRoundCountdownTimer() {
   if (nextRoundCountdownTimerIntervalId !== undefined) {
     clearInterval(nextRoundCountdownTimerIntervalId);
     nextRoundCountdownTimerIntervalId = undefined;
-    document.getElementById("notification-holder").classList.remove('visible');
+    turnOffNotificationMessage();
   }
 }
 
@@ -139,16 +149,16 @@ function updateUI(serverMessage) {
 function notifyUser(notification) {
   if (notification.type === "USER_ANSWERED_CORRECTLY_FIRST") {
     document.getElementById("notification-title").innerHTML = "+2 POINTS";
-    document.getElementById("notification-message").innerHTML = "First Correct Answer!";
+    document.getElementById("notification-message").innerHTML = "First to Answer Correctly!";
     confetti(document.getElementById("confetti-holder"));
   } else if (notification.type === "USER_ANSWERED_CORRECTLY") {
     document.getElementById("notification-title").innerHTML = "+1 POINT";
     document.getElementById("notification-message").innerHTML = "Correct Answer!";
     confetti(document.getElementById("confetti-holder"));
   }
-  document.getElementById("notification-holder").classList.add('visible');
+  turnOnNotificationMessage();
   setTimeout(() => {
-    document.getElementById("notification-holder").classList.remove('visible');
+    turnOffNotificationMessage();
   }, 2000);
 }
 
