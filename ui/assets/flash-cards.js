@@ -55,7 +55,7 @@ function updateRoundCountdownTimer(activeRound) {
       if (timeLeft < 0) {
         timeLeft = 0;
       }
-      document.getElementById("time-left-in-round").innerHTML = (Math.round(timeLeft/100) / 10).toFixed(1);
+      document.getElementById("time-left-in-round").innerHTML = (Math.round(timeLeft / 100) / 10).toFixed(1);
     }, 49);
   }
 }
@@ -68,14 +68,13 @@ function turnOffRoundCountdownTimer() {
 }
 
 function updateUI(serverMessage) {
-  // TODO - put in big timer notifying user when next round starts
-  // TODO - put in cool block graphics to show why answer is correct
-  // TODO - Sort scoreboard by highest score first
+  // TODO - put in big timer notifying user when next round starts. Use yellow notification UI?
+  // TODO - put in cool block graphics to show why answer is correct  
   // TODO - improve yellow notification UI... hard to read
 
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
-  if (shouldShowWelcomeScreen(activePlayers)) {   
+  if (shouldShowWelcomeScreen(activePlayers)) {
     document.getElementById("game-screen").style.display = "none";
     document.getElementById("welcome-screen").style.display = "block";
   } else {
@@ -96,9 +95,12 @@ function updateUI(serverMessage) {
     }
   }
 
-  // TODO - sort by top score!
+  
   var scoreboardHtml = ""
-  for (var player of activePlayers) {
+  let sortedPlayersByScore = activePlayers.sort((a, b) => {
+    return b.score - a.score;
+  });
+  for (var player of sortedPlayersByScore) {
     scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
   }
   document.getElementById("scoreboard-list").innerHTML = scoreboardHtml;
