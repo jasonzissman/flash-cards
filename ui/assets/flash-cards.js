@@ -1,8 +1,8 @@
+// TODO - eventually, use a one-time token scheme to set up this info instead
+// of just trusting client
+let userId = new URLSearchParams(window.location.search).get('userId');
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
-const userId = new URLSearchParams(window.location.search).get('userId');
-
-
 
 // TODO - eventually use wss, not ws
 const webSocketUrl = `ws://localhost:3002`;
@@ -71,9 +71,7 @@ let nextRoundCountdownTimerIntervalId;
 function updateNextRoundCountdownTimer(nextRoundStartTime) {
   if (nextRoundStartTime !== undefined && nextRoundCountdownTimerIntervalId === undefined) {
 
-
     document.getElementById("notification-title").innerHTML = "Next Round Starting";
-
     document.getElementById("notification-holder").classList.add('visible');
 
     nextRoundCountdownTimerIntervalId = setInterval(() => {
@@ -95,7 +93,6 @@ function turnOffNextRoundCountdownTimer() {
 }
 
 function updateUI(serverMessage) {
-  // TODO - put in big timer notifying user when next round starts. Use yellow notification UI?
   // TODO - put in cool block graphics to show why answer is correct  
   // TODO - improve yellow notification UI... hard to read
 
@@ -167,6 +164,8 @@ webSocket.onmessage = (event) => {
       updateUI(serverMessage);
     } else if (serverMessage.messageType === "NOTIFY_USER") {
       notifyUser(serverMessage.notification);
+    } else if (serverMessage.messageType === "INIT_CONNECTION_COMPLETE") {
+      userId = serverMessage.userId;
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
@@ -177,9 +176,6 @@ document.getElementById("join-game").onclick = () => {
   localStorage.setItem("displayName", document.getElementById("display-name").value);
   const joinGameObject = {
     action: "JOIN_GAME",
-    tenantId: tenantId,
-    gameId: gameId,
-    userId: userId,
     displayName: document.getElementById("display-name").value
   };
   webSocket.send(JSON.stringify(joinGameObject));

@@ -1,5 +1,6 @@
 const express = require('express');
 const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
 const app = express();
 const httpPort = 3001;
 const webSocketPort = 3002;
@@ -17,17 +18,31 @@ app.get('/:tenantId/active-games', (req, res) => {
 });
 
 let initializeConnection = (message, webSocketConn) => {
+
+  // TODO - validate user input params
+
+  // TODO - eventually, instead of trusting client, establish token generation scheme
+  // where 1-time use token is associated with these points.
+
   let gameId = message.gameId;
   if (!gameId) {
     gameId = gameHelper.createNewGame(message.tenantId);
   }
 
-  // TODO - eventually, instead of trusting client, establish token generation scheme
-  // where token is associated with these points.
+  let tenantId = message.tenantId;
+  if (!tenantId) {
+    tenantId = "GENERIC_TENANT_ID";
+  }
+  
+  let userId = message.userId;
+  if (!userId) {
+    userId = uuidv4();
+  }
+
   webSocketConn.sessionInfo = {
-    tenantId: message.tenantId,
+    tenantId: tenantId,
     gameId: gameId,
-    userId: message.userId
+    userId: userId
   };
 
   // Alert user of updates to the game
@@ -53,6 +68,14 @@ let initializeConnection = (message, webSocketConn) => {
       webSocketConn.send(JSON.stringify(message));
     }
   });
+
+  webSocketConn.send(JSON.stringify({
+    gameType: "FLASH_CARDS_MULTIPLICATION",
+    messageType: "INIT_CONNECTION_COMPLETE",
+    tenantId: webSocketConn.sessionInfo.tenantId,
+    gameId: webSocketConn.sessionInfo.gameId,
+    userId: webSocketConn.sessionInfo.userId
+  }));
 };
 
 // Handle websocket connection
@@ -71,15 +94,15 @@ webSocketServer.on('connection', (webSocketConn) => {
     // If trying to join game but no ID, create a game
     if (message.action === "INITIALIZE_CONNECTION") {
       initializeConnection(message, webSocketConn);
+    } else {
+      const gameId = webSocketConn.sessionInfo.gameId;
+      const tenantId = webSocketConn.sessionInfo.tenantId;
+      const userId = webSocketConn.sessionInfo.userId;
+  
+      let response = gameHelper.processMessage(gameId, tenantId, userId, message);  
+      webSocketConn.send(JSON.stringify(response));
     }
 
-    const gameId = webSocketConn.sessionInfo.gameId;
-    const tenantId = webSocketConn.sessionInfo.tenantId;
-    const userId = webSocketConn.sessionInfo.userId;
-
-    let response = gameHelper.processMessage(gameId, tenantId, userId, message);
-
-    webSocketConn.send(JSON.stringify(response));
   });
 
   // On connection ended
@@ -97,8 +120,8 @@ webSocketServer.on('connection', (webSocketConn) => {
 
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.
   // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+  
 
-  webSocketConn.send(JSON.stringify({ status: "connection established" }));
 });
 
 
