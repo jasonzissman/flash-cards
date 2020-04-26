@@ -132,13 +132,13 @@ const gameHelper = {
     },
 
     startNextRound: (gameId) => {
-        // TODO - is this working?
+
         let response = {
             message: "Could not start next round."
         };
         let game = gameHelper.getGame(gameId);
         if (game && game.gameState && !game.gameState.activeRound) {
-            response = game.gameState.startNextRound();
+            response = game.gameState.startCountdownToNextRound();
         }
         return response;
     },

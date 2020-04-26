@@ -67,6 +67,33 @@ function turnOffRoundCountdownTimer() {
   }
 }
 
+let nextRoundCountdownTimerIntervalId;
+function updateNextRoundCountdownTimer(nextRoundStartTime) {
+  if (nextRoundStartTime !== undefined && nextRoundCountdownTimerIntervalId === undefined) {
+
+
+    document.getElementById("notification-title").innerHTML = "Next Round Starting";
+
+    document.getElementById("notification-holder").classList.add('visible');
+
+    nextRoundCountdownTimerIntervalId = setInterval(() => {
+      let timeLeft = nextRoundStartTime - new Date().getTime();
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+      }
+      document.getElementById("notification-message").innerHTML = (Math.round(timeLeft / 100) / 10).toFixed(1) + " seconds";
+    }, 49);
+  }
+}
+
+function turnOffNextRoundCountdownTimer() {
+  if (nextRoundCountdownTimerIntervalId !== undefined) {
+    clearInterval(nextRoundCountdownTimerIntervalId);
+    nextRoundCountdownTimerIntervalId = undefined;
+    document.getElementById("notification-holder").classList.remove('visible');
+  }
+}
+
 function updateUI(serverMessage) {
   // TODO - put in big timer notifying user when next round starts. Use yellow notification UI?
   // TODO - put in cool block graphics to show why answer is correct  
@@ -93,9 +120,15 @@ function updateUI(serverMessage) {
       document.getElementById("submit-answer").style.display = "none";
       turnOffRoundCountdownTimer();
     }
+
+    if (gameState.nextRoundStartTime !== undefined) {
+      updateNextRoundCountdownTimer(gameState.nextRoundStartTime);
+    } else {
+      turnOffNextRoundCountdownTimer()
+    }
   }
 
-  
+
   var scoreboardHtml = ""
   let sortedPlayersByScore = activePlayers.sort((a, b) => {
     return b.score - a.score;
