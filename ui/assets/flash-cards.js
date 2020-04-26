@@ -47,11 +47,31 @@ function shouldShowWelcomeScreen(activePlayers) {
   return !activePlayers || activePlayers.length === 0 || !hasPlayerJoinedGame(activePlayers);
 }
 
+let roundCountdownTimerIntervalId;
+function updateRoundCountdownTimer(activeRound) {
+  if (activeRound && roundCountdownTimerIntervalId === undefined) {
+    roundCountdownTimerIntervalId = setInterval(() => {
+      let timeLeft = activeRound.expireTime - new Date().getTime();
+      if (timeLeft < 0) {
+        timeLeft = 0;
+      }
+      document.getElementById("time-left-in-round").innerHTML = (Math.round(timeLeft/100) / 10).toFixed(1);
+    }, 49);
+  }
+}
+
+function turnOffRoundCountdownTimer() {
+  if (roundCountdownTimerIntervalId !== undefined) {
+    clearInterval(roundCountdownTimerIntervalId);
+    roundCountdownTimerIntervalId = undefined;
+  }
+}
+
 function updateUI(serverMessage) {
-  // TODO - disable submit button if current player has correctly answered      
   // TODO - put in big timer notifying user when next round starts
-  // TODO - put in cool block graphics to show users why answer is correct
-  // TODO - put in countdown timer for round
+  // TODO - put in cool block graphics to show why answer is correct
+  // TODO - Sort scoreboard by highest score first
+  // TODO - improve yellow notification UI... hard to read
 
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
@@ -68,13 +88,15 @@ function updateUI(serverMessage) {
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
       document.getElementById("submit-answer").style.display = "inline-block";
       document.getElementById("start-next-round").style.display = "none";
+      updateRoundCountdownTimer(gameState.activeRound);
     } else {
       document.getElementById("start-next-round").style.display = "inline-block";
       document.getElementById("submit-answer").style.display = "none";
+      turnOffRoundCountdownTimer();
     }
   }
-  // #scoreboard-list
-  // <li>Player 1 (34 points)</li>
+
+  // TODO - sort by top score!
   var scoreboardHtml = ""
   for (var player of activePlayers) {
     scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
