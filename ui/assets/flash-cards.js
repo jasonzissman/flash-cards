@@ -49,13 +49,16 @@ function shouldShowWelcomeScreen(activePlayers) {
 
 let roundCountdownTimerIntervalId;
 function updateRoundCountdownTimer(activeRound) {
-  if (activeRound && roundCountdownTimerIntervalId === undefined) {
+  if (activeRound && hasUserAlreadyAnswered(activeRound.answers)) {
+    turnOffRoundCountdownTimer();
+    document.getElementById("round-status").innerHTML = "Waiting on other players...";
+  } else if (activeRound && roundCountdownTimerIntervalId === undefined) {
     roundCountdownTimerIntervalId = setInterval(() => {
       let timeLeft = activeRound.expireTime - new Date().getTime();
       if (timeLeft < 0) {
         timeLeft = 0;
       }
-      document.getElementById("time-left-in-round").innerHTML = (Math.round(timeLeft / 100) / 10).toFixed(1);
+      document.getElementById("round-status").innerHTML = (Math.round(timeLeft / 100) / 10).toFixed(1) + " seconds";
     }, 49);
   }
 }
@@ -132,13 +135,11 @@ function turnOnLastAnswerDisplay(answers) {
 
 function turnOffLastAnswerDisplay() {
   document.getElementById("last-answer").style.display = "none";
-  
 }
 
 
 function updateUI(serverMessage) {
   
-  // TODO - Cancel round countdown timer and show "waiting for others to finish" once answer provided
   // TODO - put in cool block graphics to show answer visually as round goes on 
 
   let gameState = serverMessage.gameState;
@@ -175,6 +176,7 @@ function updateUI(serverMessage) {
       if (document.getElementById("start-next-round").style.display === "none") {
         document.getElementById("start-next-round").style.display = "inline-block";
         document.getElementById("start-next-round").focus();
+        document.getElementById("round-status").innerHTML = "Completed";
       }
     }
 
