@@ -102,9 +102,22 @@ function turnOffNextRoundCountdownTimer() {
   }
 }
 
+function turnOnUserAnswerFields() {
+  document.getElementById("answer-field").style.display = "inline-block";
+  document.getElementById("submit-answer").style.display = "inline-block";
+}
+
+function turnOffUserAnswerFields() {
+  document.getElementById("answer-field").style.display = "none";
+  document.getElementById("submit-answer").style.display = "none";
+}
+
+function hasUserAlreadyAnswered(answers) {
+  return answers[userId] !== undefined;
+}
+
 function updateUI(serverMessage) {
   // TODO - put in cool block graphics to show why answer is correct  
-  // TODO - improve yellow notification UI... hard to read
 
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
@@ -119,12 +132,19 @@ function updateUI(serverMessage) {
 
     if (gameState.activeRound) {
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
-      document.getElementById("submit-answer").style.display = "inline-block";
+
+      if (!hasUserAlreadyAnswered(gameState.activeRound.answers)) {
+        turnOnUserAnswerFields();
+      } else {
+        turnOffUserAnswerFields();
+      }
+        
+
       document.getElementById("start-next-round").style.display = "none";
       updateRoundCountdownTimer(gameState.activeRound);
     } else {
       document.getElementById("start-next-round").style.display = "inline-block";
-      document.getElementById("submit-answer").style.display = "none";
+      turnOffUserAnswerFields();
       turnOffRoundCountdownTimer();
     }
 
