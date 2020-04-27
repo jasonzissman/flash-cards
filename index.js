@@ -5,6 +5,9 @@ const app = express();
 const httpPort = 3001;
 const webSocketPort = 3002;
 
+// TODO - run through back end and make sure null-pointer exceptions cannot take down app.
+// TODO - after running for a while and hitting refresh a lot: "MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 game-state-changed listeners added to [GameStateChangeEmitter]. Use emitter.setMaxListeners() to increase limit"
+
 const gameHelper = require("./app/games/game-helper");
 
 // HTML/JS

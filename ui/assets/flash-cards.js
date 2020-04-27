@@ -103,8 +103,14 @@ function turnOffNextRoundCountdownTimer() {
 }
 
 function turnOnUserAnswerFields() {
-  document.getElementById("answer-field").style.display = "inline-block";
-  document.getElementById("submit-answer").style.display = "inline-block";
+  if (document.getElementById("answer-field").style.display === "none") {
+    document.getElementById("answer-field").value = '';
+    document.getElementById("answer-field").style.display = "inline-block";
+    document.getElementById("answer-field").focus();
+  }
+  if (document.getElementById("submit-answer").style.display === "none") {
+    document.getElementById("submit-answer").style.display = "inline-block";
+  }
 }
 
 function turnOffUserAnswerFields() {
@@ -116,36 +122,60 @@ function hasUserAlreadyAnswered(answers) {
   return answers[userId] !== undefined;
 }
 
+function turnOnLastAnswerDisplay(answers) {
+  if (answers[userId] !== undefined)  {
+    document.getElementById("last-answer").innerHTML = "You answered: " + answers[userId].answerProvided;
+    document.getElementById("last-answer").style.display = "block";
+  }
+
+}
+
+function turnOffLastAnswerDisplay() {
+  document.getElementById("last-answer").style.display = "none";
+  
+}
+
+
 function updateUI(serverMessage) {
-  // TODO - make UI less busy... too much going on
-  // TODO - put in cool block graphics to show why answer is correct  
+  
+  // TODO - Cancel round countdown timer and show "waiting for others to finish" once answer provided
+  // TODO - put in cool block graphics to show answer visually as round goes on 
+
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
   if (shouldShowWelcomeScreen(activePlayers)) {
-    document.getElementById("game-screen").style.display = "none";
-    document.getElementById("welcome-screen").style.display = "block";
+
+    if (document.getElementById("welcome-screen").style.display === "none") {
+      document.getElementById("game-screen").style.display = "none";
+      document.getElementById("welcome-screen").style.display = "block";
+      document.getElementById("display-name").focus();
+    }
+
   } else {
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRound;
-    document.getElementById("user-score").innerHTML = getCurrentUserScore(activePlayers) + " points";
 
     if (gameState.activeRound) {
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
 
       if (!hasUserAlreadyAnswered(gameState.activeRound.answers)) {
         turnOnUserAnswerFields();
+        turnOffLastAnswerDisplay();
       } else {
         turnOffUserAnswerFields();
+        turnOnLastAnswerDisplay(gameState.activeRound.answers);
       }
-        
 
       document.getElementById("start-next-round").style.display = "none";
       updateRoundCountdownTimer(gameState.activeRound);
     } else {
-      document.getElementById("start-next-round").style.display = "inline-block";
       turnOffUserAnswerFields();
       turnOffRoundCountdownTimer();
+      if (document.getElementById("start-next-round").style.display === "none") {
+        document.getElementById("start-next-round").style.display = "inline-block";
+        document.getElementById("start-next-round").focus();
+      }
     }
 
     if (gameState.nextRoundStartTime !== undefined) {
@@ -155,13 +185,16 @@ function updateUI(serverMessage) {
     }
   }
 
-
   var scoreboardHtml = ""
   let sortedPlayersByScore = activePlayers.sort((a, b) => {
     return b.score - a.score;
   });
   for (var player of sortedPlayersByScore) {
-    scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
+    if (player.id === userId) {
+      scoreboardHtml += "<li class='current-user'>" + player.displayName + " (" + player.score + " points)</li>";
+    } else {
+      scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
+    }
   }
   document.getElementById("scoreboard-list").innerHTML = scoreboardHtml;
 }
@@ -196,13 +229,13 @@ webSocket.onmessage = (event) => {
       notifyUser(serverMessage.notification);
     } else if (serverMessage.messageType === "INIT_CONNECTION_COMPLETE") {
       userId = serverMessage.userId;
-      document.getElementById("game-share-link").value = location.href.split("?")[0] + "?gameId=" +  serverMessage.gameId;
+      document.getElementById("game-share-link").value = location.href.split("?")[0] + "?gameId=" + serverMessage.gameId;
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
 };
 
-document.getElementById("join-game").onclick = () => {
+function joinGame() {
   // TODO - validate user input. Set maximum length and alphanumeric only
   localStorage.setItem("displayName", document.getElementById("display-name").value);
   const joinGameObject = {
@@ -210,22 +243,24 @@ document.getElementById("join-game").onclick = () => {
     displayName: document.getElementById("display-name").value
   };
   webSocket.send(JSON.stringify(joinGameObject));
-};
+}
 
-document.getElementById("start-next-round").onclick = () => {
-  // 
-  const startGameObject = {
-    action: "START_NEXT_ROUND"
-  };
-  webSocket.send(JSON.stringify(startGameObject));
-};
-
-document.getElementById("submit-answer").onclick = () => {
+function submitAnswer() {
   const submitAnswerObject = {
     action: "SUBMIT_ANSWER",
     answer: document.getElementById("answer-field").value
   };
   webSocket.send(JSON.stringify(submitAnswerObject));
+}
+function startNextRound() {
+  const startGameObject = {
+    action: "START_NEXT_ROUND"
+  };
+  webSocket.send(JSON.stringify(startGameObject));
+}
+
+document.getElementById("start-next-round").onclick = () => {
+  startNextRound();
 };
 
 document.getElementById("display-name").value = localStorage.getItem("displayName");

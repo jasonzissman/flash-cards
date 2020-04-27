@@ -2,24 +2,33 @@
 
 <head>
     <title>Flash Cards</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="assets/style.css" />
 </head>
 
 <body>
     <h1>Multiplication</h1>
+    <section>
+        <p>
+            <input type="text" readonly id="game-share-link"></input>
+        </p>
+    </section>
     <section id="welcome-screen">
         <p id="welcome-message-num-players">You are the only one in the game.</p>
         <label>Enter your name</label>
-        <input id="display-name" type="text" value="Player 1" required />
-        <button id="join-game">Join Game</button>
+        <form action="javascript:joinGame();">
+            <input id="display-name" type="text" value="Player 1" required autofocus />
+            <button id="join-game">Join Game</button>
+        </form>
     </section>
     <section id="game-screen" style="display:none;">
-        <p id="current-round">Round 1</p>
-        <p id="user-score">0 points</p>
-        <p>Time left: <span id="time-left-in-round">10</span> seconds</p>
+        <span id="current-round">Round 1</span> - Time left: <span id="time-left-in-round">10</span> seconds
         <p id="question-prompt"></p>
-        <input id="answer-field" type="number" />
-        <button id="submit-answer">Submit Answer</button>
+        <form action="javascript:submitAnswer();">
+            <input id="answer-field" type="number" autofocus />
+            <button id="submit-answer">Submit Answer</button>
+        </form>
+        <p id="last-answer">No answer</p>
         <button id="start-next-round">Start Next Round</button>
         <section id="notification-overlay"></section>
         <section id="notification-holder">
@@ -28,14 +37,10 @@
         </section>
         <span id="confetti-holder"></span>
     </section>
-    <section>
-        <p>
-            <input type="text" readonly id="game-share-link"></input>
-        </p>
-    </section>
+
     <section id="scoreboard">
         <h2>Scoreboard</h2>
-        <ol id="scoreboard-list">            
+        <ol id="scoreboard-list">
         </ol>
     </section>
     <script type="text/javascript" src="assets/confetti.js"></script>

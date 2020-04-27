@@ -11,8 +11,27 @@ body {
   padding: 20px 30px;
   overflow-y: auto;
 }
+button {
+  font-size: 20px;
+}
+input {
+  font-size: 20px;
+}
 #question-prompt {
-  font-size: 3em;
+  font-size: 4em;
+  margin: 5px;
+}
+#scoreboard li.current-user {
+  color: yellow;
+}
+#answer-field {
+  font-size: 20px;
+}
+#submit-answer {
+  margin-top: 5px;
+}
+#last-answer {
+  display: none;
 }
 #scoreboard h2 {
   text-decoration: underline;
