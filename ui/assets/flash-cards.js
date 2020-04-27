@@ -117,8 +117,8 @@ function hasUserAlreadyAnswered(answers) {
 }
 
 function updateUI(serverMessage) {
+  // TODO - make UI less busy... too much going on
   // TODO - put in cool block graphics to show why answer is correct  
-
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
   if (shouldShowWelcomeScreen(activePlayers)) {
@@ -196,6 +196,7 @@ webSocket.onmessage = (event) => {
       notifyUser(serverMessage.notification);
     } else if (serverMessage.messageType === "INIT_CONNECTION_COMPLETE") {
       userId = serverMessage.userId;
+      document.getElementById("game-share-link").value = location.href.split("?")[0] + "?gameId=" +  serverMessage.gameId;
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
