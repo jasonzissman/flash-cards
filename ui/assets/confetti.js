@@ -1,9 +1,14 @@
 const defaultColors = ["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"];
 
-function createElements(root, elementCount, colors, width, height) {
+function createElements(root, elementCount, colors, width, height, divContent, fontSize) {
   return Array.from({ length: elementCount }).map((_, index) => {
     const element = document.createElement("div");
-    const color = colors[index % colors.length];
+    const color = colors[index % colors.length]; 
+    if (divContent) {
+      element.innerHTML = divContent;
+    }
+    element.style["font-size"] = fontSize;
+    element.style["background-color"] = color; // eslint-disable-line space-infix-ops
     element.style["background-color"] = color; // eslint-disable-line space-infix-ops
     element.style.width = width;
     element.style.height = height;
@@ -97,7 +102,9 @@ const defaults = {
   duration: 3000,
   stagger: 0,
   dragFriction: 0.1,
-  random: Math.random
+  random: Math.random,
+  divContent: undefined,
+  fontSize: undefined
 };
 
 function backwardPatch(config) {
@@ -120,9 +127,11 @@ function confetti(root, config = {}) {
     dragFriction,
     duration,
     stagger,
-    random
+    random,
+    divContent,
+    fontSize
   } = Object.assign({}, defaults, backwardPatch(config));
-  const elements = createElements(root, elementCount, colors, width, height);
+  const elements = createElements(root, elementCount, colors, width, height, divContent,fontSize);
   const fettis = elements.map(element => ({
     element,
     physics: randomPhysics(angle, spread, startVelocity, random)

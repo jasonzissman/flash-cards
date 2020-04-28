@@ -100,8 +100,10 @@ const gameHelper = {
                         break;
                     }
                 }
-
+            } else {
+                gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_INCORRECTLY" });
             }
+
             gameHelper.emitGameStateChange(gameId);
             response = {
                 message: "Answer received."

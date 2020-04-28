@@ -69,6 +69,29 @@ function turnOffRoundCountdownTimer() {
     roundCountdownTimerIntervalId = undefined;
   }
 }
+
+let blocksAlreadyRenderedRoundId;
+function fillInAnimatedBlocks(activeRound) {
+  if (activeRound && blocksAlreadyRenderedRoundId !== activeRound.id) {
+    blocksAlreadyRenderedRoundId = activeRound.id;
+    for(let i=11; i>-1; i--) {
+      for(let j=0; j<12; j++) {
+        document.querySelector(`#animated-blocks-table tr:nth-child(${i+1}) td:nth-child(${j+1})`).classList.remove("filled-in");
+      }
+    }
+    let counter = 0;
+    for(let j=11; j>(11-activeRound.prompt[1]); j--) {
+      for(let i=0; i<activeRound.prompt[0]; i++) {
+        counter++;
+        setTimeout(() => {
+          document.querySelector(`#animated-blocks-table tr:nth-child(${j+1}) td:nth-child(${i+1})`).classList.add("filled-in");
+        }, 11*counter);
+      } 
+    }
+        
+  }
+}
+
 function showModal() {
   document.getElementById("modal").classList.add('active');
 }
@@ -129,6 +152,7 @@ function turnOnUserAnswerFields() {
   }
   if (document.getElementById("submit-answer").style.display === "none") {
     document.getElementById("submit-answer").style.display = "inline-block";
+    document.getElementById("submit-answer").disabled = true;
   }
 }
 
@@ -173,7 +197,9 @@ function updateUI(serverMessage) {
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRound;
 
     if (gameState.activeRound) {
+
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
+      fillInAnimatedBlocks(gameState.activeRound);
 
       if (!hasUserAlreadyAnswered(gameState.activeRound.answers)) {
         turnOnUserAnswerFields();
@@ -229,12 +255,26 @@ function notifyUser(notification) {
     document.getElementById("notification-title").innerHTML = "+1 POINT";
     document.getElementById("notification-message").innerHTML = "Correct Answer!";
     confetti(document.getElementById("confetti-holder"));
+  } else if (notification.type === "USER_ANSWERED_INCORRECTLY") {
+    // TODO show correct answer
+    document.getElementById("notification-title").innerHTML = "+0 POINTS";
+    document.getElementById("notification-message").innerHTML = "Incorrect answer.";
+    // TODO Show confetti with sad faces?
+    confetti(document.getElementById("confetti-holder"), {
+      divContent: ":(",
+      colors: [""],
+      width: "50px",
+      height: "50px",
+      fontSize: "45px",
+      elementCount: 25
+    });    
   }
+
   turnOnNotificationMessage();
   setTimeout(() => {
     turnOffNotificationMessage();
-  }, 2000);
-}
+  }, 3000);
+} 
 
 document.getElementById("show-share-link").onclick = () => {
   showShareLinkSection();
@@ -289,6 +329,12 @@ function startNextRound() {
 
 document.getElementById("start-next-round").onclick = () => {
   startNextRound();
+};
+
+document.getElementById("answer-field").onchange = () => {
+  if(document.getElementById("answer-field").value !== undefined) {
+    document.getElementById("submit-answer").disabled = false;
+  }
 };
 
 document.getElementById("display-name").value = localStorage.getItem("displayName");

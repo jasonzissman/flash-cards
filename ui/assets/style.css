@@ -49,6 +49,9 @@ a {
 }
 #animated-blocks-table td.filled-in {
   background-color: #FFFFFF;
+  -webkit-transition: background-color 500ms linear;
+  -ms-transition: background-color 500ms linear;
+  transition: background-color 500ms linear;
 }
 h1,h2 {
   text-decoration: underline;
