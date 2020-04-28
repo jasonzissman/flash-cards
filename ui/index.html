@@ -3,46 +3,64 @@
 <head>
     <title>Flash Cards</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- TODO - bundle local copy of spectre -->
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
     <link rel="stylesheet" type="text/css" href="assets/style.css" />
 </head>
 
 <body>
-    <h1>Multiplication</h1>
-    <section>
-        <p>
-            <input type="text" readonly id="game-share-link"></input>
-        </p>
-    </section>
-    <section id="welcome-screen">
-        <p id="welcome-message-num-players">You are the only one in the game.</p>
-        <label>Enter your name</label>
-        <form action="javascript:joinGame();">
-            <input id="display-name" type="text" value="Player 1" required autofocus />
-            <button id="join-game">Join Game</button>
-        </form>
-    </section>
-    <section id="game-screen" style="display:none;">
-        <span id="current-round">Round 1</span> - <span id="round-status">10.0 seconds</span>
-        <p id="question-prompt"></p>
-        <form action="javascript:submitAnswer();">
-            <input id="answer-field" type="number" autofocus />
-            <button id="submit-answer">Submit Answer</button>
-        </form>
-        <p id="last-answer">No answer</p>
-        <button id="start-next-round">Start Next Round</button>
-        <section id="notification-overlay"></section>
-        <section id="notification-holder">
-            <p id="notification-title"></p>
-            <p id="notification-message"></p>
-        </section>
-        <span id="confetti-holder"></span>
-    </section>
+    <div class="container">
+        <div class="columns">
+            <section class="col-9 col-md-8 col-sm-12">
+                <h1>Multiplication</h1>
+                <section id="welcome-screen">
+                    <p id="welcome-message-num-players">You are the only one in the game.</p>
+                    <label>Enter your name</label>
+                    <form action="javascript:joinGame();">
+                        <input id="display-name" type="text" value="Player 1" required autofocus />
+                        <button id="join-game">Join Game</button>
+                    </form>
+                </section>
+                <section id="game-screen" style="display:none;">
+                    <span id="current-round">Round 1</span> - <span id="round-status">10.0 seconds</span>
+                    <p id="question-prompt"></p>
+                    <form action="javascript:submitAnswer();">
+                        <input id="answer-field" type="number" autofocus />
+                        <button id="submit-answer">Submit Answer</button>
+                    </form>
+                    <p id="last-answer">No answer</p>
+                    <!-- TODO PUT BLOCK ANIMATION HERE -->
+                    <button id="start-next-round">Start Next Round</button>
+                </section>
+                <section>
+                    <a id="show-share-link" href="javascript:void(0);">Invite others to your game!</a>
+                </section>
+            </section>
 
-    <section id="scoreboard">
-        <h2>Scoreboard</h2>
-        <ol id="scoreboard-list">
-        </ol>
-    </section>
+            <section id="scoreboard" class="col-3 col-md-4 col-sm-12">
+                <h2>Scoreboard</h2>
+                <ol id="scoreboard-list">
+                </ol>
+            </section>
+        </div>
+    </div>
+    
+    <div id="modal" class="modal modal-sm">
+        <a id="modal-overlay" href="javascript:void(0);" class="modal-overlay" aria-label="Close"></a>
+        <div class="modal-container">
+            <div class="modal-content-wrapper">
+                <section id="share-link-section">
+                    <label>Link to join this game</label>
+                    <input type="text" readonly id="game-share-link"></input>
+                </section>
+                <section id="notification-holder" style="display:none;">
+                    <p id="notification-title"></p>
+                    <p id="notification-message"></p>
+                </section>
+                <span id="confetti-holder"></span>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript" src="assets/confetti.js"></script>
     <script type="text/javascript" src="assets/flash-cards.js"></script>
 </body>

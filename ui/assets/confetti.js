@@ -94,7 +94,7 @@ const defaults = {
   width: "10px",
   height: "10px",
   colors: defaultColors,
-  duration: 1800,
+  duration: 3000,
   stagger: 0,
   dragFriction: 0.1,
   random: Math.random

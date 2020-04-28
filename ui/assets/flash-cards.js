@@ -71,13 +71,14 @@ function turnOffRoundCountdownTimer() {
 }
 
 function turnOnNotificationMessage() {
-  document.getElementById("notification-holder").classList.add('visible');
-  document.getElementById("notification-overlay").classList.add('visible');
+  document.getElementById("share-link-section").style.display = "none";
+  document.getElementById("notification-holder").style.display = "block";
+  document.getElementById("modal").classList.add('active');
 }
 
 function turnOffNotificationMessage() {
-  document.getElementById("notification-holder").classList.remove('visible');
-  document.getElementById("notification-overlay").classList.remove('visible');
+  document.getElementById("modal").classList.remove('active');
+  document.getElementById("notification-holder").style.display = "none";
 }
 
 let nextRoundCountdownTimerIntervalId;
@@ -137,7 +138,6 @@ function turnOffLastAnswerDisplay() {
   document.getElementById("last-answer").style.display = "none";
 }
 
-
 function updateUI(serverMessage) {
   
   // TODO - put in cool block graphics to show answer visually as round goes on 
@@ -192,8 +192,12 @@ function updateUI(serverMessage) {
     return b.score - a.score;
   });
   for (var player of sortedPlayersByScore) {
+    let scoreString = + player.score + " points";
+    if (player.score === 1) {
+      scoreString = "1 point";
+    }
     if (player.id === userId) {
-      scoreboardHtml += "<li class='current-user'>" + player.displayName + " (" + player.score + " points)</li>";
+      scoreboardHtml += "<li class='current-user'>" + player.displayName + " (" + scoreString + ")</li>";
     } else {
       scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
     }
@@ -216,6 +220,16 @@ function notifyUser(notification) {
     turnOffNotificationMessage();
   }, 2000);
 }
+
+document.getElementById("show-share-link").onclick = () => {
+  document.getElementById("share-link-section").style.display = "block";
+  document.getElementById("modal").classList.add('active');
+};
+document.getElementById("modal-overlay").onclick = () => {
+  if (nextRoundCountdownTimerIntervalId === undefined) {
+    document.getElementById("modal").classList.remove('active');
+  }
+};
 
 ////////////////////////////////////////////////
 ////// END OF UI CODE
