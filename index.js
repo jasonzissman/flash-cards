@@ -22,24 +22,28 @@ app.get('/:tenantId/active-games', (req, res) => {
 
 let initializeConnection = (message, webSocketConn) => {
 
-  // TODO - validate user input params
-
   // TODO - eventually, instead of trusting client, establish token generation scheme
   // where 1-time use token is associated with these points.
 
   let gameId = message.gameId;
   if (!gameId) {
     gameId = gameHelper.createNewGame(message.tenantId);
+  } else {
+    gameId = gameId.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
   }
 
   let tenantId = message.tenantId;
   if (!tenantId) {
     tenantId = "GENERIC_TENANT_ID";
+  } else {
+    tenantId = tenantId.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
   }
-  
+
   let userId = message.userId;
   if (!userId) {
     userId = uuidv4();
+  } else {
+    userId = userId.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
   }
 
   webSocketConn.sessionInfo = {
@@ -81,6 +85,21 @@ let initializeConnection = (message, webSocketConn) => {
   }));
 };
 
+function isValidRequest(messageStr) {
+  let isValid = messageStr && messageStr.length < 1000;
+
+  if (isValid) {
+    try {
+      JSON.parse(messageStr);
+    } catch (e) {
+      console.log("Improper JSON provided!");
+      isValid = false;
+    }
+  }
+
+  return isValid;
+}
+
 // Handle websocket connection
 const webSocketServer = new WebSocket.Server({ port: webSocketPort });
 webSocketServer.on('connection', (webSocketConn) => {
@@ -90,21 +109,33 @@ webSocketServer.on('connection', (webSocketConn) => {
   // On message received
   webSocketConn.on('message', (messageStr) => {
 
-    // TODO - validate client input
-
-    let message = JSON.parse(messageStr);
-
-    // If trying to join game but no ID, create a game
-    if (message.action === "INITIALIZE_CONNECTION") {
-      initializeConnection(message, webSocketConn);
+    if (!isValidRequest(messageStr)) {
+      console.log("Invalid message!!! Size: " + messageStr.length);
+      let message = {
+        gameType: "FLASH_CARDS_MULTIPLICATION",
+        messageType: "INVALID_MESSAGE_PROVIDED",
+        message: "Invalid message provided."
+      };
+      webSocketConn.send(JSON.stringify(message));
+      
     } else {
-      const gameId = webSocketConn.sessionInfo.gameId;
-      const tenantId = webSocketConn.sessionInfo.tenantId;
-      const userId = webSocketConn.sessionInfo.userId;
-  
-      let response = gameHelper.processMessage(gameId, tenantId, userId, message);  
-      webSocketConn.send(JSON.stringify(response));
+
+      let message = JSON.parse(messageStr);
+      message.action = message.action.replace(/[^a-z-_0-9]+/gi, " ").substring(0,50).trim();
+
+      // If trying to join game but no ID, create a game
+      if (message.action === "INITIALIZE_CONNECTION") {
+        initializeConnection(message, webSocketConn);
+      } else {
+        const gameId = webSocketConn.sessionInfo.gameId;
+        const tenantId = webSocketConn.sessionInfo.tenantId;
+        const userId = webSocketConn.sessionInfo.userId;
+
+        let response = gameHelper.processMessage(gameId, tenantId, userId, message);
+        webSocketConn.send(JSON.stringify(response));
+      }
     }
+
 
   });
 
@@ -123,7 +154,6 @@ webSocketServer.on('connection', (webSocketConn) => {
 
   // TODO - put in heartbeat/ping that periodically confirms connections are still active.
   // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
-  
 
 });
 

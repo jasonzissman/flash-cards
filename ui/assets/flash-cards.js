@@ -179,8 +179,6 @@ function turnOffLastAnswerDisplay() {
 
 function updateUI(serverMessage) {
 
-  // TODO - put in cool block graphics to show answer visually as round goes on 
-
   let gameState = serverMessage.gameState;
   let activePlayers = serverMessage.activePlayers;
   if (shouldShowWelcomeScreen(activePlayers)) {
@@ -258,8 +256,7 @@ function notifyUser(notification) {
   } else if (notification.type === "USER_ANSWERED_INCORRECTLY") {
     // TODO show correct answer
     document.getElementById("notification-title").innerHTML = "+0 POINTS";
-    document.getElementById("notification-message").innerHTML = "Incorrect answer.";
-    // TODO Show confetti with sad faces?
+    document.getElementById("notification-message").innerHTML = "Incorrect answer.";    
     confetti(document.getElementById("confetti-holder"), {
       divContent: ":(",
       colors: [""],
@@ -304,11 +301,11 @@ webSocket.onmessage = (event) => {
 };
 
 function joinGame() {
-  // TODO - validate user input. Set maximum length and alphanumeric only
-  localStorage.setItem("displayName", document.getElementById("display-name").value);
+  let userEnteredName = document.getElementById("display-name").value.replace(/[^a-z-_0-9]+/gi, " ").substring(0,40).trim();
+  localStorage.setItem("displayName", userEnteredName);
   const joinGameObject = {
     action: "JOIN_GAME",
-    displayName: document.getElementById("display-name").value
+    displayName: userEnteredName
   };
   webSocket.send(JSON.stringify(joinGameObject));
 }

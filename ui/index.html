@@ -17,7 +17,7 @@
                     <p id="welcome-message-num-players">You are the only one in the game.</p>
                     <label>Enter your name</label>
                     <form action="javascript:joinGame();">
-                        <input id="display-name" type="text" value="Player 1" required autofocus />
+                        <input id="display-name" type="text" value="Player 1" maxlength="40" required autofocus />
                         <button id="join-game">Join Game</button>
                     </form>
                 </section>
@@ -25,7 +25,7 @@
                     <span id="current-round">Round 1</span> - <span id="round-status">10.0 seconds</span>
                     <p id="question-prompt"></p>
                     <form action="javascript:submitAnswer();">
-                        <input id="answer-field" type="number" autofocus />
+                        <input id="answer-field" type="number" maxlength=10 autofocus />
                         <button id="submit-answer" disabled>Submit Answer</button>
                     </form>
                     <p id="last-answer">No answer</p>

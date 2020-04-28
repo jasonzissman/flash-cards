@@ -52,6 +52,7 @@ const gameHelper = {
             if (game && game.gameState && !game.gameState.hasGameStarted) {
                 game.gameState.startGame();
             }
+            message.displayName = message.displayName.replace(/[^a-z-_0-9]+/gi, " ").substring(0,50).trim();
             response = gameHelper.joinGame(gameId, tenantId, userId, message.displayName);
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
@@ -149,9 +150,7 @@ const gameHelper = {
 
         let response = {
             status: "Unable to join game"
-        };
-
-        // TODO - validate that this user belongs to this tenant and this game
+        };       
 
         const game = gameHelper.getGame(gameId);
         if (game) {
