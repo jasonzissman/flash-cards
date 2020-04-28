@@ -36,6 +36,20 @@ a {
 #last-answer {
   display: none;
 }
+#animated-blocks-table {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+#animated-blocks-table td {
+  background-color: #bbbbbb;
+  border-radius: 6px;
+  width: 15px;
+  height: 15px;
+}
+#animated-blocks-table td.filled-in {
+  background-color: #FFFFFF;
+}
 h1,h2 {
   text-decoration: underline;
 }
