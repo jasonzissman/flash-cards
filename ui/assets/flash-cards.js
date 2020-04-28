@@ -69,16 +69,31 @@ function turnOffRoundCountdownTimer() {
     roundCountdownTimerIntervalId = undefined;
   }
 }
+function showModal() {
+  document.getElementById("modal").classList.add('active');
+}
+function hideModal() {
+  // Only turn off if next round countdown is not active
+  if (nextRoundCountdownTimerIntervalId === undefined) {
+    document.getElementById("modal").classList.remove('active');
+  }
+}
+function showShareLinkSection() {
+  document.getElementById("share-link-section").style.display = "block";
+  showModal();
+}
 
 function turnOnNotificationMessage() {
   document.getElementById("share-link-section").style.display = "none";
   document.getElementById("notification-holder").style.display = "block";
-  document.getElementById("modal").classList.add('active');
+  showModal();
 }
-
 function turnOffNotificationMessage() {
-  document.getElementById("modal").classList.remove('active');
-  document.getElementById("notification-holder").style.display = "none";
+  // Only turn off if next round countdown is not active
+  if (nextRoundCountdownTimerIntervalId === undefined) {
+    hideModal();
+    document.getElementById("notification-holder").style.display = "none";
+  }
 }
 
 let nextRoundCountdownTimerIntervalId;
@@ -127,7 +142,7 @@ function hasUserAlreadyAnswered(answers) {
 }
 
 function turnOnLastAnswerDisplay(answers) {
-  if (answers[userId] !== undefined)  {
+  if (answers[userId] !== undefined) {
     document.getElementById("last-answer").innerHTML = "You answered: " + answers[userId].answerProvided;
     document.getElementById("last-answer").style.display = "block";
   }
@@ -139,7 +154,7 @@ function turnOffLastAnswerDisplay() {
 }
 
 function updateUI(serverMessage) {
-  
+
   // TODO - put in cool block graphics to show answer visually as round goes on 
 
   let gameState = serverMessage.gameState;
@@ -222,13 +237,10 @@ function notifyUser(notification) {
 }
 
 document.getElementById("show-share-link").onclick = () => {
-  document.getElementById("share-link-section").style.display = "block";
-  document.getElementById("modal").classList.add('active');
+  showShareLinkSection();
 };
 document.getElementById("modal-overlay").onclick = () => {
-  if (nextRoundCountdownTimerIntervalId === undefined) {
-    document.getElementById("modal").classList.remove('active');
-  }
+  hideModal();
 };
 
 ////////////////////////////////////////////////

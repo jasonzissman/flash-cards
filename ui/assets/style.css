@@ -22,7 +22,7 @@ input {
   margin: 5px;
 }
 #scoreboard li.current-user {
-  color: yellow;
+  font-weight: 900;
 }
 a { 
   color: yellow;
@@ -36,7 +36,7 @@ a {
 #last-answer {
   display: none;
 }
-#scoreboard h2 {
+h1,h2 {
   text-decoration: underline;
 }
 #scoreboard ol {
