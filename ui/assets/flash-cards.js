@@ -319,7 +319,7 @@ webSocket.onmessage = (event) => {
         action: "PONG"
       }));
     } else if (serverMessage.messageType === "GAME_NOT_FOUND") {
-      endGame(`Could not find game ${serverMessage.gameId}. Please start a new game.`);
+      endGame(`Could not find game ${serverMessage.gameId}. <a href="/">Please start a new game.</a>`);
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
@@ -327,7 +327,7 @@ webSocket.onmessage = (event) => {
 
 webSocket.onclose = () => {
   if (!hasGameEndedForThisUser) {
-    endGame("The game has ended. Please start a new game.");
+    endGame("The game has ended. <a href="/">Please start a new game.</a>");
   }
 };
 
