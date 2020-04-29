@@ -46,7 +46,6 @@ const gameHelper = {
         };
 
         if (message.action === "JOIN_GAME") {
-            let game = gameHelper.getGame(gameId);
             message.displayName = message.displayName.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
             response = gameHelper.joinGame(gameId, tenantId, userId, message.displayName);
         } else if (message.action === "SUBMIT_ANSWER") {

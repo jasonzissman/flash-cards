@@ -3,9 +3,6 @@ const gameHelper = require("./game-helper");
 const logger = require('./log-helper');
 const { v4: uuidv4 } = require('uuid');
 
-// TODO - run through ALL back end and make sure null-pointer exceptions cannot take down app.
-// THIS INCLUDES SOMEONE SENDING WS COMMANDS AGAINST NON-EXISTENT GAMES OR USERS OR TENANTS
-
 let webSocketHelper = {
 
     webSocketServer: new WebSocket.Server({
@@ -58,12 +55,11 @@ let webSocketHelper = {
 
         if (!webSocketHelper.isValidMessage(messageStr)) {
             logger.error("Invalid message!!! Size: " + messageStr.length);
-            let message = {
+            webSocketConn.send(JSON.stringify({
                 gameType: "FLASH_CARDS_MULTIPLICATION",
                 messageType: "INVALID_MESSAGE_PROVIDED",
                 message: "Invalid message provided."
-            };
-            webSocketConn.send(JSON.stringify(message));
+            }));
 
         } else {
 
@@ -75,12 +71,15 @@ let webSocketHelper = {
             } else if (message.action === "PONG") {
                 // PING-PONG heartbeat to confirm connection is still alive
                 webSocketConn.isAlive = true;
+            } else if (!gameHelper.getGame(gameId)) {
+                // Fail because all other logical avenues require an existing game
+                webSocketHelper.terminateWebsocketSinceGameNotFound(webSocketConn);
             } else {
                 webSocketConn.lastActivity = new Date().getTime();
                 const gameId = webSocketConn.sessionInfo.gameId;
                 const tenantId = webSocketConn.sessionInfo.tenantId;
                 const userId = webSocketConn.sessionInfo.userId;
-                let response = gameHelper.processMessage(gameId, tenantId, userId, message);
+                gameHelper.processMessage(gameId, tenantId, userId, message);
                 webSocketConn.send(JSON.stringify(response));
             }
         }
@@ -154,37 +153,51 @@ let webSocketHelper = {
         };
     },
 
+    terminateWebsocketSinceGameNotFound: (webSocketConn) => {
+        webSocketConn.send(JSON.stringify({
+            gameType: "FLASH_CARDS_MULTIPLICATION",
+            messageType: "GAME_NOT_FOUND",
+            gameId: webSocketConn.sessionInfo.gameId
+        }));
+        logger.info(`Could not find game ${webSocketConn.sessionInfo.gameId}. Terminating websocket for user ${webSocketConn.sessionInfo.userId}.`);
+        return webSocketConn.terminate();
+    },
+
     initializeWebSocketConnection: (webSocketConn, message) => {
 
         webSocketConn.sessionInfo = webSocketHelper.getCleansedSessionInfo(message);
 
-        webSocketConn.sendGameStateChange = (gameState) => {
+        if (gameHelper.getGame(webSocketConn.sessionInfo.gameId)) {
+            webSocketConn.sendGameStateChange = (gameState) => {
+                webSocketConn.send(JSON.stringify({
+                    gameType: "FLASH_CARDS_MULTIPLICATION",
+                    messageType: "GAME_STATE_CHANGE",
+                    activePlayers: gameHelper.getGame(webSocketConn.sessionInfo.gameId).activePlayers,
+                    gameState: gameState
+                }));
+            };
+            gameHelper.getGame(webSocketConn.sessionInfo.gameId).gameState.gameStateChangeEmitter.on('game-state-changed', webSocketConn.sendGameStateChange);
+
+            webSocketConn.sendUserNotification = (notification) => {
+                webSocketConn.send(JSON.stringify({
+                    gameType: "FLASH_CARDS_MULTIPLICATION",
+                    messageType: "NOTIFY_USER",
+                    notification: notification
+                }));
+            };
+            const userSpecificEventName = 'notify-user-' + webSocketConn.sessionInfo.userId;
+            gameHelper.getGame(webSocketConn.sessionInfo.gameId).gameState.gameStateChangeEmitter.on(userSpecificEventName, webSocketConn.sendUserNotification);
+
             webSocketConn.send(JSON.stringify({
                 gameType: "FLASH_CARDS_MULTIPLICATION",
-                messageType: "GAME_STATE_CHANGE",
-                activePlayers: gameHelper.getGame(webSocketConn.sessionInfo.gameId).activePlayers,
-                gameState: gameState
+                messageType: "INIT_CONNECTION_COMPLETE",
+                tenantId: webSocketConn.sessionInfo.tenantId,
+                gameId: webSocketConn.sessionInfo.gameId,
+                userId: webSocketConn.sessionInfo.userId
             }));
-        };
-        gameHelper.getGame(webSocketConn.sessionInfo.gameId).gameState.gameStateChangeEmitter.on('game-state-changed', webSocketConn.sendGameStateChange);
-
-        webSocketConn.sendUserNotification = (notification) => {
-            webSocketConn.send(JSON.stringify({
-                gameType: "FLASH_CARDS_MULTIPLICATION",
-                messageType: "NOTIFY_USER",
-                notification: notification
-            }));
-        };
-        const userSpecificEventName = 'notify-user-' + webSocketConn.sessionInfo.userId;
-        gameHelper.getGame(webSocketConn.sessionInfo.gameId).gameState.gameStateChangeEmitter.on(userSpecificEventName, webSocketConn.sendUserNotification);
-
-        webSocketConn.send(JSON.stringify({
-            gameType: "FLASH_CARDS_MULTIPLICATION",
-            messageType: "INIT_CONNECTION_COMPLETE",
-            tenantId: webSocketConn.sessionInfo.tenantId,
-            gameId: webSocketConn.sessionInfo.gameId,
-            userId: webSocketConn.sessionInfo.userId
-        }));
+        } else {
+            return webSocketHelper.terminateWebsocketSinceGameNotFound(webSocketConn);
+        }
     }
 };
 

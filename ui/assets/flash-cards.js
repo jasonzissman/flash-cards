@@ -161,10 +161,12 @@ function turnOffRealAnswerDisplay() {
   document.getElementById("correct-answer").style.display = "none";
 }
 
-function endGame() {
+function endGame(message) {
   hasGameEndedForThisUser = true;
   document.getElementById("notification-title").innerHTML = "GAME OVER";
-  document.getElementById("notification-message").innerHTML = "The game has ended. Please start a new game.";
+  if (message) {
+    document.getElementById("notification-message").innerHTML = message;
+  }
   turnOnNotificationMessage();
 }
 
@@ -313,13 +315,17 @@ webSocket.onmessage = (event) => {
       webSocket.send(JSON.stringify({
         action: "PONG"
       }));
+    } else if (serverMessage.messageType === "GAME_NOT_FOUND") {
+      endGame(`Could not find game ${serverMessage.gameId}. Please start a new game.`);
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
 };
 
 webSocket.onclose = () => {
-  endGame();
+  if (!hasGameEndedForThisUser) {
+    endGame("The game has ended. Please start a new game.");
+  }
 };
 
 function joinGame() {
