@@ -85,7 +85,7 @@ function fillInAnimatedBlocks(activeRound) {
         counter++;
         setTimeout(() => {
           document.querySelector(`#animated-blocks-table tr:nth-child(${j+1}) td:nth-child(${i+1})`).classList.add("filled-in");
-        }, 11*counter);
+        }, 21*counter);
       } 
     }
         
@@ -145,36 +145,32 @@ function turnOffNextRoundCountdownTimer() {
 }
 
 function turnOnUserAnswerFields() {
-  if (document.getElementById("answer-field").style.display === "none") {
+  if (document.getElementById("answer-question-form").style.display === "none") {
     document.getElementById("answer-field").value = '';
-    document.getElementById("answer-field").style.display = "inline-block";
+    document.getElementById("answer-question-form").style.display = "inline-block";
     document.getElementById("answer-field").focus();
-  }
-  if (document.getElementById("submit-answer").style.display === "none") {
-    document.getElementById("submit-answer").style.display = "inline-block";
     document.getElementById("submit-answer").disabled = true;
   }
 }
 
 function turnOffUserAnswerFields() {
-  document.getElementById("answer-field").style.display = "none";
-  document.getElementById("submit-answer").style.display = "none";
+  document.getElementById("answer-question-form").style.display = "none";  
 }
 
 function hasUserAlreadyAnswered(answers) {
   return answers[userId] !== undefined;
 }
 
-function turnOnLastAnswerDisplay(answers) {
-  if (answers[userId] !== undefined) {
-    document.getElementById("last-answer").innerHTML = "You answered: " + answers[userId].answerProvided;
-    document.getElementById("last-answer").style.display = "block";
-  }
-
+function prepareHiddenAnswerDisplay(questionPrompt) {
+  document.getElementById("correct-answer").innerHTML = "Correct answer: " + questionPrompt[0] * questionPrompt[1];    
 }
 
-function turnOffLastAnswerDisplay() {
-  document.getElementById("last-answer").style.display = "none";
+function turnOnRealAnswerDisplay() {
+  document.getElementById("correct-answer").style.display = "block";
+}
+
+function turnOffRealAnswerDisplay() {
+  document.getElementById("correct-answer").style.display = "none";
 }
 
 function updateUI(serverMessage) {
@@ -192,19 +188,20 @@ function updateUI(serverMessage) {
   } else {
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
-    document.getElementById("current-round").innerHTML = "Round " + gameState.currentRound;
+    document.getElementById("current-round").innerHTML = "Round " + gameState.currentRoundIndex;
 
     if (gameState.activeRound) {
 
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
       fillInAnimatedBlocks(gameState.activeRound);
+      prepareHiddenAnswerDisplay(gameState.activeRound.prompt);
 
       if (!hasUserAlreadyAnswered(gameState.activeRound.answers)) {
+        turnOffRealAnswerDisplay();
         turnOnUserAnswerFields();
-        turnOffLastAnswerDisplay();
       } else {
+        turnOnRealAnswerDisplay();
         turnOffUserAnswerFields();
-        turnOnLastAnswerDisplay(gameState.activeRound.answers);
       }
 
       document.getElementById("start-next-round").style.display = "none";
@@ -236,15 +233,18 @@ function updateUI(serverMessage) {
       scoreString = "1 point";
     }
     if (player.id === userId) {
-      scoreboardHtml += "<li class='current-user'>" + player.displayName + " (" + scoreString + ")</li>";
+      scoreboardHtml += "<li class='current-user'>" + player.displayName + "<br/>(" + scoreString + ")</li>";
     } else {
-      scoreboardHtml += "<li>" + player.displayName + " (" + player.score + " points)</li>";
+      scoreboardHtml += "<li>" + player.displayName + "<br/>(" + player.score + " points)</li>";
     }
   }
   document.getElementById("scoreboard-list").innerHTML = scoreboardHtml;
 }
 
 function notifyUser(notification) {
+
+  let notificationDuration = 3000;
+
   if (notification.type === "USER_ANSWERED_CORRECTLY_FIRST") {
     document.getElementById("notification-title").innerHTML = "+2 POINTS";
     document.getElementById("notification-message").innerHTML = "First to Answer Correctly!";
@@ -254,9 +254,8 @@ function notifyUser(notification) {
     document.getElementById("notification-message").innerHTML = "Correct Answer!";
     confetti(document.getElementById("confetti-holder"));
   } else if (notification.type === "USER_ANSWERED_INCORRECTLY") {
-    // TODO show correct answer
     document.getElementById("notification-title").innerHTML = "+0 POINTS";
-    document.getElementById("notification-message").innerHTML = "Incorrect answer.";    
+    document.getElementById("notification-message").innerHTML = "Incorrect answer.";
     confetti(document.getElementById("confetti-holder"), {
       divContent: ":(",
       colors: [""],
@@ -264,13 +263,23 @@ function notifyUser(notification) {
       height: "50px",
       fontSize: "45px",
       elementCount: 25
-    });    
+    });
+  } else if (notification.type === "NEW_USER_JOINED_GAMES") {
+    if (notification.userId === userId) {
+      document.getElementById("notification-title").innerHTML = "WELCOME";
+      document.getElementById("notification-message").innerHTML = "You have joined the game!";
+    } else {
+      document.getElementById("notification-title").innerHTML = "NEW PLAYER";
+      document.getElementById("notification-message").innerHTML = notification.displayName + " has joined!";
+    }
+    notificationDuration = 2000;
+    confetti(document.getElementById("confetti-holder"));
   }
 
   turnOnNotificationMessage();
   setTimeout(() => {
     turnOffNotificationMessage();
-  }, 3000);
+  }, notificationDuration);
 } 
 
 document.getElementById("show-share-link").onclick = () => {

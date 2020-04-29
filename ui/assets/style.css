@@ -18,7 +18,7 @@ input {
   font-size: 20px;
 }
 #question-prompt {
-  font-size: 4em;
+  font-size: 3.65em;
   margin: 5px;
 }
 #scoreboard li.current-user {
@@ -33,9 +33,6 @@ a {
 #submit-answer {
   margin-top: 5px;
 }
-#last-answer {
-  display: none;
-}
 #animated-blocks-table {
   text-align: center;
   margin-left: auto;
@@ -49,9 +46,9 @@ a {
 }
 #animated-blocks-table td.filled-in {
   background-color: #FFFFFF;
-  -webkit-transition: background-color 500ms linear;
-  -ms-transition: background-color 500ms linear;
-  transition: background-color 500ms linear;
+  -webkit-transition: background-color 160ms linear;
+  -ms-transition: background-color 160ms linear;
+  transition: background-color 160ms linear;
 }
 h1,h2 {
   text-decoration: underline;

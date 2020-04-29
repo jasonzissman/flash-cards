@@ -50,7 +50,7 @@ const gameHelper = {
             if (game && game.gameState && !game.gameState.hasGameStarted) {
                 game.gameState.startGame();
             }
-            message.displayName = message.displayName.replace(/[^a-z-_0-9]+/gi, " ").substring(0,50).trim();
+            message.displayName = message.displayName.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
             response = gameHelper.joinGame(gameId, tenantId, userId, message.displayName);
         } else if (message.action === "SUBMIT_ANSWER") {
             response = gameHelper.submitAnswer(gameId, userId, message.answer);
@@ -72,7 +72,7 @@ const gameHelper = {
             let correctAnswer = game.gameState.getCorrectAnswerForActiveRound();
             // Double equals (not triple) on purpose to allow for type coercion
             if (answer == correctAnswer) {
-                
+
                 let isFirstToAnswerCorrectly = false;
                 if (game.activePlayers.length > 1) {
                     isFirstToAnswerCorrectly = true;
@@ -86,7 +86,7 @@ const gameHelper = {
                 }
 
                 if (isFirstToAnswerCorrectly) {
-                    gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY_FIRST"});
+                    gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY_FIRST" });
                 } else {
                     gameHelper.emitNotificationToUser(gameId, userId, { type: "USER_ANSWERED_CORRECTLY" });
                 }
@@ -148,7 +148,7 @@ const gameHelper = {
 
         let response = {
             status: "Unable to join game"
-        };       
+        };
 
         const game = gameHelper.getGame(gameId);
         if (game) {
@@ -173,6 +173,11 @@ const gameHelper = {
                 };
 
                 gameHelper.emitGameStateChange(gameId);
+                gameHelper.emitNotificationToAllUsers(gameId, {
+                    type: "NEW_USER_JOINED_GAMES",
+                    userId: userId,
+                    displayName: displayName
+                });
                 logger.info("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
             }
         }
@@ -187,11 +192,21 @@ const gameHelper = {
         }
     },
 
-    emitNotificationToUser: (gameId, userId, notification) => {        
+    emitNotificationToUser: (gameId, userId, notification) => {
         let game = gameHelper.getGame(gameId);
         if (game) {
             const userSpecificEventName = 'notify-user-' + userId;
             game.gameState.gameStateChangeEmitter.emit(userSpecificEventName, notification);
+        }
+    },
+
+    emitNotificationToAllUsers: (gameId, notification) => {
+        let game = gameHelper.getGame(gameId);
+        if (game) {
+            for (var activePlayer of game.activePlayers) {
+                const userSpecificEventName = 'notify-user-' + activePlayer.id;
+                game.gameState.gameStateChangeEmitter.emit(userSpecificEventName, notification);
+            }
         }
     },
 

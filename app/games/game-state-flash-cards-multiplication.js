@@ -4,7 +4,7 @@ const GameStateChangeEmitter = require('./game-state-change-emitter');
 class GameStateFlashCardsMultiplication {
 
     constructor() {
-        this.currentRound = 0;
+        this.currentRoundIndex = 0;
         this.hasGameStarted = false;
         this.activeRound = undefined;
         this.activeRoundTimerId = undefined;
@@ -18,8 +18,8 @@ class GameStateFlashCardsMultiplication {
     }
 
     startGame() {
+        // TODO - Is this needed?
         this.hasGameStarted = true;
-        this.startCountdownToNextRound();
     }
 
     startCountdownToNextRound() {
@@ -49,7 +49,7 @@ class GameStateFlashCardsMultiplication {
 
     startNextRound() {
         this.nextRoundStartTime = undefined;
-        this.currentRound++;
+        this.currentRoundIndex++;
 
         let rightNow = new Date();
         let roundDuration = 10; // seconds
@@ -84,11 +84,10 @@ class GameStateFlashCardsMultiplication {
 
     getUserViewOfGameState() {
         return {
-            currentRound: this.currentRound,
+            currentRoundIndex: this.currentRoundIndex,
             hasGameStarted: this.hasGameStarted,
             activeRound: this.activeRound,
-            nextRoundStartTime: this.nextRoundStartTime,
-            pastTenRounds: this.pastRounds.slice(-10)
+            nextRoundStartTime: this.nextRoundStartTime
         };
     }
 
