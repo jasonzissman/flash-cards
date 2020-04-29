@@ -71,7 +71,7 @@ let webSocketHelper = {
             } else if (message.action === "PONG") {
                 // PING-PONG heartbeat to confirm connection is still alive
                 webSocketConn.isAlive = true;
-            } else if (!gameHelper.getGame(gameId)) {
+            } else if (!gameHelper.getGame(webSocketConn.sessionInfo.gameId)) {
                 // Fail because all other logical avenues require an existing game
                 webSocketHelper.terminateWebsocketSinceGameNotFound(webSocketConn);
             } else {
@@ -79,7 +79,7 @@ let webSocketHelper = {
                 const gameId = webSocketConn.sessionInfo.gameId;
                 const tenantId = webSocketConn.sessionInfo.tenantId;
                 const userId = webSocketConn.sessionInfo.userId;
-                gameHelper.processMessage(gameId, tenantId, userId, message);
+                let response = gameHelper.processMessage(gameId, tenantId, userId, message);
                 webSocketConn.send(JSON.stringify(response));
             }
         }
