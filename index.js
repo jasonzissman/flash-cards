@@ -3,7 +3,7 @@ const logger = require('./app/games/log-helper');
 const WebSocketHelper = require('./app/games/websocket-helper');
 const gameHelper = require("./app/games/game-helper");
 const app = express();
-const httpPort = 3001;
+const httpPort = process.env.PORT || 3001;
 
 // HTML/JS
 app.use(express.static('ui'));
@@ -15,8 +15,8 @@ app.get('/:tenantId/active-games', (req, res) => {
   res.status(200).json(activeGamesForTenant);
 });
 
-WebSocketHelper.startWebSocketServer();
 
-app.listen(httpPort, () => {
+// TODO - in the real world, web sockets and http would be on different ports.
+WebSocketHelper.startWebSocketServer(app.listen(httpPort, () => {
   logger.info('Flashcards app listening on port %s!', httpPort);
-});
+}));

@@ -290,7 +290,10 @@ document.getElementById("modal-overlay").onclick = () => {
 ////// END OF UI CODE
 ///////////////////////////////////////////////
 
-const webSocketUrl = `ws://localhost:3002`;
+
+// TODO - in the real world, web sockets and http would be on different ports.
+const webSocketUrl = location.origin.replace(/^http/, 'ws');
+
 const webSocket = new WebSocket(webSocketUrl);
 webSocket.onopen = () => {
   webSocket.send(JSON.stringify({

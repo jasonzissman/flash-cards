@@ -5,11 +5,11 @@ const { v4: uuidv4 } = require('uuid');
 
 let webSocketHelper = {
 
-    webSocketServer: new WebSocket.Server({
-        port: 3002
-    }),
+    webSocketServer: undefined,
 
-    startWebSocketServer: () => {
+    startWebSocketServer: (expressServer) => {
+
+        webSocketHelper.webSocketServer = new WebSocket.Server({server: expressServer});
 
         webSocketHelper.webSocketServer.on('connection', (webSocketConn) => {
 
