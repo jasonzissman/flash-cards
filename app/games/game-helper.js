@@ -1,4 +1,5 @@
 const GameStateFlashCardsMultiplication = require('./game-state-flash-cards-multiplication');
+const logger = require('./log-helper');
 const { v4: uuidv4 } = require('uuid');
 
 const gameHelper = {
@@ -39,9 +40,6 @@ const gameHelper = {
     },
 
     processMessage: (gameId, tenantId, userId, message) => {
-
-        // TODO validate input data here
-        // TODO Important! Validate all user-provided date, including display name and answer
 
         let response = {
             message: "Action unknown."
@@ -162,9 +160,6 @@ const gameHelper = {
                 }
             }
 
-            // TODO - if player already joined, consider
-            // bouncing previous session for that user and
-            // inserting new session anyway
             if (!playerAlreadyJoined) {
                 game.activePlayers.push({
                     id: userId,
@@ -178,7 +173,7 @@ const gameHelper = {
                 };
 
                 gameHelper.emitGameStateChange(gameId);
-                console.log("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
+                logger.info("User %s joined game %s for tenant %s.", userId, gameId, tenantId);
             }
         }
 
@@ -192,12 +187,11 @@ const gameHelper = {
         }
     },
 
-    emitNotificationToUser: (gameId, userId, notification) => {
-        // TODO - this use case shows that this is not really a 'game state change' emitter,
-        // but a more generic game event emitter. Refactor name?
+    emitNotificationToUser: (gameId, userId, notification) => {        
         let game = gameHelper.getGame(gameId);
         if (game) {
-            game.gameState.gameStateChangeEmitter.emit('notify-user', userId, notification);
+            const userSpecificEventName = 'notify-user-' + userId;
+            game.gameState.gameStateChangeEmitter.emit(userSpecificEventName, notification);
         }
     },
 
@@ -205,7 +199,8 @@ const gameHelper = {
         // TODO - eventually migrate old games elsewhere
         // so that we maintain historical data. Don't just delete.
 
-        gameHelper.getGame(gameId).gameStateChangeEmitter.removeAllListeners();
+        logger.info("Deleting game " + gameId + " since no players left.");
+        gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.removeAllListeners();
         gameHelper.CURRENT_GAMES = gameHelper.CURRENT_GAMES.filter((game) => {
             return game.id !== gameId;
         });
@@ -224,7 +219,6 @@ const gameHelper = {
 
     exitGame: (gameId, tenantId, userId) => {
 
-        // TODO validate input data here       
         let response = {
             message: "Could not remove user from game."
         };
@@ -235,7 +229,7 @@ const gameHelper = {
                 return activePlayer.id !== userId;
             });
 
-            console.log("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
+            logger.info("User %s removed from game %s for tenant %s.", userId, gameId, tenantId);
 
             gameHelper.emitGameStateChange(gameId);
 

@@ -9,6 +9,7 @@
   "author": "Jason Zissman",
   "license": "ISC",
   "dependencies": {
+    "bunyan": "^1.8.12",
     "events": "^3.1.0",
     "express": "^4.17.1",
     "uuid": "^7.0.3",
