@@ -23,9 +23,6 @@ app.get('/:tenantId/active-games', (req, res) => {
 
 let initializeConnection = (message, webSocketConn) => {
 
-  // TODO - eventually, instead of trusting client, establish token generation scheme
-  // where 1-time use token is associated with these points.
-
   let tenantId = message.tenantId;
   if (!tenantId) {
     tenantId = "GENERIC_TENANT_ID";
@@ -54,13 +51,12 @@ let initializeConnection = (message, webSocketConn) => {
   };
 
   webSocketConn.sendGameStateChange = (gameState) => {
-    let message = {
+    webSocketConn.send(JSON.stringify({
       gameType: "FLASH_CARDS_MULTIPLICATION",
       messageType: "GAME_STATE_CHANGE",
       activePlayers: gameHelper.getGame(gameId).activePlayers,
       gameState: gameState
-    }
-    webSocketConn.send(JSON.stringify(message));
+    }));
   };
   gameHelper.getGame(gameId).gameState.gameStateChangeEmitter.on('game-state-changed', webSocketConn.sendGameStateChange);
 
@@ -105,7 +101,8 @@ webSocketServer.on('connection', (webSocketConn) => {
 
   logger.info('connection established');
 
-  // On message received
+  webSocketConn.isAlive = true;
+
   webSocketConn.on('message', (messageStr) => {
 
     if (!isValidRequest(messageStr)) {
@@ -124,6 +121,9 @@ webSocketServer.on('connection', (webSocketConn) => {
 
       if (message.action === "INITIALIZE_CONNECTION") {
         initializeConnection(message, webSocketConn);
+      } else if (message.action === "PONG") {
+        // PING-PONG heartbeat to confirm connection is still alive
+        webSocketConn.isAlive = true;
       } else {
         const gameId = webSocketConn.sessionInfo.gameId;
         const tenantId = webSocketConn.sessionInfo.tenantId;
@@ -135,12 +135,12 @@ webSocketServer.on('connection', (webSocketConn) => {
   });
 
   webSocketConn.on('close', () => {
-  
+
     if (webSocketConn.sessionInfo) {
       const gameId = webSocketConn.sessionInfo.gameId;
       const tenantId = webSocketConn.sessionInfo.tenantId;
       const userId = webSocketConn.sessionInfo.userId;
-      
+
       let response = gameHelper.exitGame(gameId, tenantId, userId);
 
       let game = gameHelper.getGame(gameId);
@@ -157,12 +157,23 @@ webSocketServer.on('connection', (webSocketConn) => {
       webSocketConn.send(JSON.stringify(response));
     }
   });
-
-  // TODO - put in heartbeat/ping that periodically confirms connections are still active.
-  // example: https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
-
 });
 
+const pingAllConnectionsInterval = setInterval(() => {
+  webSocketServer.clients.forEach((webSocketConn) => {
+    if (webSocketConn.isAlive === false) {
+      return webSocketConn.terminate();
+    }
+    webSocketConn.isAlive = false;
+    webSocketConn.send(JSON.stringify({
+      gameType: "FLASH_CARDS_MULTIPLICATION",
+      messageType: "PING",
+    }));  });
+}, 30000);
+
+webSocketServer.on('close', () => {
+  clearInterval(pingAllConnectionsInterval);
+});
 
 app.listen(httpPort, () => {
   logger.info('Flashcards app listening on port %s!', httpPort);

@@ -1,10 +1,7 @@
-// TODO - eventually, use a one-time token scheme to set up this info instead
-// of just trusting client
 let userId = new URLSearchParams(window.location.search).get('userId');
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
 
-// TODO - eventually use wss, not ws
 const webSocketUrl = `ws://localhost:3002`;
 const webSocket = new WebSocket(webSocketUrl);
 webSocket.onopen = () => {
@@ -303,6 +300,10 @@ webSocket.onmessage = (event) => {
     } else if (serverMessage.messageType === "INIT_CONNECTION_COMPLETE") {
       userId = serverMessage.userId;
       document.getElementById("game-share-link").value = location.href.split("?")[0] + "?gameId=" + serverMessage.gameId;
+    } else if (serverMessage.messageType === "PING") {
+      webSocket.send(JSON.stringify({
+        action: "PONG"
+      }));
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));

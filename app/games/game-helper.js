@@ -65,11 +65,10 @@ const gameHelper = {
         let game = gameHelper.getGame(gameId);
         if (game && game.gameState) {
             game.gameState.userAnswered(userId, answer);
-            // TODO - Must be a smarter way (filter?) to do this instead of for loop
+
             let correctAnswer = game.gameState.getCorrectAnswerForActiveRound();
             // Double equals (not triple) on purpose to allow for type coercion
             if (answer == correctAnswer) {
-
                 let isFirstToAnswerCorrectly = false;
                 if (game.activePlayers.length > 1) {
                     isFirstToAnswerCorrectly = true;
