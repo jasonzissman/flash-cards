@@ -327,7 +327,7 @@ webSocket.onmessage = (event) => {
 
 webSocket.onclose = () => {
   if (!hasGameEndedForThisUser) {
-    endGame("The game has ended. <a href="/">Please start a new game.</a>");
+    endGame(`The game has ended. <a href="/">Please start a new game.</a>`);
   }
 };
 
