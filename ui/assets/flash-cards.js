@@ -362,4 +362,10 @@ document.getElementById("answer-field").onchange = () => {
   }
 };
 
+document.getElementById("answer-field").onkeyup = () => {
+  if(document.getElementById("answer-field").value !== undefined) {
+    document.getElementById("submit-answer").disabled = false;
+  }
+};
+
 document.getElementById("display-name").value = localStorage.getItem("displayName");
