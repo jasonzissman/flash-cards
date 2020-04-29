@@ -2,24 +2,16 @@ let userId = new URLSearchParams(window.location.search).get('userId');
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
 
-const webSocketUrl = `ws://localhost:3002`;
-const webSocket = new WebSocket(webSocketUrl);
-webSocket.onopen = () => {
-  webSocket.send(JSON.stringify({
-    action: "INITIALIZE_CONNECTION",
-    tenantId: tenantId,
-    gameId: gameId,
-    userId: userId
-  }));
-};
-
 ////////////////////////////////////////////////
 ////// UI CODE - belongs somewhere else
 ///////////////////////////////////////////////
 
+hasGameEndedForThisUser = false;
+
 function printMessage(message) {
   console.log(message);
 }
+
 function getCurrentPlayerFromActivePlayers(activePlayers) {
   let retVal = undefined;
   for (var player of activePlayers) {
@@ -92,8 +84,8 @@ function showModal() {
   document.getElementById("modal").classList.add('active');
 }
 function hideModal() {
-  // Only turn off if next round countdown is not active
-  if (nextRoundCountdownTimerIntervalId === undefined) {
+  // Do not close if next round countdown is active or if game has ended for user
+  if (nextRoundCountdownTimerIntervalId === undefined && !hasGameEndedForThisUser) {
     document.getElementById("modal").classList.remove('active');
   }
 }
@@ -167,6 +159,13 @@ function turnOnRealAnswerDisplay() {
 
 function turnOffRealAnswerDisplay() {
   document.getElementById("correct-answer").style.display = "none";
+}
+
+function endGame() {
+  hasGameEndedForThisUser = true;
+  document.getElementById("notification-title").innerHTML = "GAME OVER";
+  document.getElementById("notification-message").innerHTML = "The game has ended. Please start a new game.";
+  turnOnNotificationMessage();
 }
 
 function updateUI(serverMessage) {
@@ -289,6 +288,16 @@ document.getElementById("modal-overlay").onclick = () => {
 ////// END OF UI CODE
 ///////////////////////////////////////////////
 
+const webSocketUrl = `ws://localhost:3002`;
+const webSocket = new WebSocket(webSocketUrl);
+webSocket.onopen = () => {
+  webSocket.send(JSON.stringify({
+    action: "INITIALIZE_CONNECTION",
+    tenantId: tenantId,
+    gameId: gameId,
+    userId: userId
+  }));
+};
 
 webSocket.onmessage = (event) => {
   let serverMessage = JSON.parse(event.data);
@@ -307,6 +316,10 @@ webSocket.onmessage = (event) => {
     }
   }
   printMessage(JSON.stringify(serverMessage, undefined, 4));
+};
+
+webSocket.onclose = () => {
+  endGame();
 };
 
 function joinGame() {
