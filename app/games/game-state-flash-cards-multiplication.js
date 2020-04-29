@@ -5,7 +5,6 @@ class GameStateFlashCardsMultiplication {
 
     constructor() {
         this.currentRoundIndex = 0;
-        this.hasGameStarted = false;
         this.activeRound = undefined;
         this.activeRoundTimerId = undefined;
         this.pastRounds = [];
@@ -17,12 +16,7 @@ class GameStateFlashCardsMultiplication {
         this.gameStateChangeEmitter.emit('game-state-changed', this.getUserViewOfGameState());
     }
 
-    startGame() {
-        // TODO - Is this needed?
-        this.hasGameStarted = true;
-    }
-
-    startCountdownToNextRound() {
+    startCountdownToNextRound(numActivePlayers) {
 
         let response = {
             status: "Could not start round. Previous round still in progress.",
@@ -30,7 +24,10 @@ class GameStateFlashCardsMultiplication {
 
         if (!this.activeRound && this.nextRoundStartTime === undefined) {
 
-            let countDownTime = 3000; // ms
+            let countDownTime = 1500; 
+            if (numActivePlayers > 1) {
+                countDownTime = 3000;
+            }
             this.nextRoundStartTime = new Date().getTime() + countDownTime;
 
             setTimeout(() => {
@@ -85,7 +82,6 @@ class GameStateFlashCardsMultiplication {
     getUserViewOfGameState() {
         return {
             currentRoundIndex: this.currentRoundIndex,
-            hasGameStarted: this.hasGameStarted,
             activeRound: this.activeRound,
             nextRoundStartTime: this.nextRoundStartTime
         };

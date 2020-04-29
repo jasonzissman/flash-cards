@@ -47,9 +47,6 @@ const gameHelper = {
 
         if (message.action === "JOIN_GAME") {
             let game = gameHelper.getGame(gameId);
-            if (game && game.gameState && !game.gameState.hasGameStarted) {
-                game.gameState.startGame();
-            }
             message.displayName = message.displayName.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 50).trim();
             response = gameHelper.joinGame(gameId, tenantId, userId, message.displayName);
         } else if (message.action === "SUBMIT_ANSWER") {
@@ -66,7 +63,7 @@ const gameHelper = {
             message: "Could not submit answer."
         };
         let game = gameHelper.getGame(gameId);
-        if (game && game.gameState && game.gameState.hasGameStarted) {
+        if (game && game.gameState) {
             game.gameState.userAnswered(userId, answer);
             // TODO - Must be a smarter way (filter?) to do this instead of for loop
             let correctAnswer = game.gameState.getCorrectAnswerForActiveRound();
@@ -117,7 +114,7 @@ const gameHelper = {
     haveAllPlayersAnswered: (gameId) => {
         let retVal = true;
         let game = gameHelper.getGame(gameId);
-        if (game && game.gameState && game.gameState.hasGameStarted) {
+        if (game && game.gameState) {
             let answers = game.gameState.getCurrentRoundAnswers();
             let activePlayerIds = game.activePlayers.map((player) => { return player.id; });
             if (answers && activePlayerIds && activePlayerIds.length > 0) {
@@ -139,7 +136,7 @@ const gameHelper = {
         };
         let game = gameHelper.getGame(gameId);
         if (game && game.gameState && !game.gameState.activeRound) {
-            response = game.gameState.startCountdownToNextRound();
+            response = game.gameState.startCountdownToNextRound(game.activePlayers.length);
         }
         return response;
     },

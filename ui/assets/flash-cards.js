@@ -8,13 +8,12 @@ const gameId = new URLSearchParams(window.location.search).get('gameId');
 const webSocketUrl = `ws://localhost:3002`;
 const webSocket = new WebSocket(webSocketUrl);
 webSocket.onopen = () => {
-  const initConnObject = {
+  webSocket.send(JSON.stringify({
     action: "INITIALIZE_CONNECTION",
     tenantId: tenantId,
     gameId: gameId,
     userId: userId
-  };
-  webSocket.send(JSON.stringify(initConnObject));
+  }));
 };
 
 ////////////////////////////////////////////////
@@ -312,25 +311,22 @@ webSocket.onmessage = (event) => {
 function joinGame() {
   let userEnteredName = document.getElementById("display-name").value.replace(/[^a-z-_0-9]+/gi, " ").substring(0,40).trim();
   localStorage.setItem("displayName", userEnteredName);
-  const joinGameObject = {
+  webSocket.send(JSON.stringify({
     action: "JOIN_GAME",
     displayName: userEnteredName
-  };
-  webSocket.send(JSON.stringify(joinGameObject));
+  }));
 }
 
 function submitAnswer() {
-  const submitAnswerObject = {
+  webSocket.send(JSON.stringify({
     action: "SUBMIT_ANSWER",
     answer: document.getElementById("answer-field").value
-  };
-  webSocket.send(JSON.stringify(submitAnswerObject));
+  }));
 }
-function startNextRound() {
-  const startGameObject = {
+function startNextRound() {  
+  webSocket.send(JSON.stringify({
     action: "START_NEXT_ROUND"
-  };
-  webSocket.send(JSON.stringify(startGameObject));
+  }));
 }
 
 document.getElementById("start-next-round").onclick = () => {

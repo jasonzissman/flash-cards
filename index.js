@@ -7,6 +7,7 @@ const httpPort = 3001;
 const webSocketPort = 3002;
 
 // TODO - run through back end and make sure null-pointer exceptions cannot take down app.
+// THIS INCLUDES SOMEONE SENDING WS COMMANDS AGAINST NON-EXISTENT GAMES OR USERS OR TENANTS
 
 const gameHelper = require("./app/games/game-helper");
 
