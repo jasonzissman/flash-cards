@@ -1,3 +1,4 @@
 node_modules
 server.log
+server.log*
 NOTES.txt

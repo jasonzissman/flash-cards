@@ -58,25 +58,42 @@ function turnOffRoundCountdownTimer() {
   }
 }
 
+
+let lastResizeTimeStamp = new Date().getTime();
+function adjustBlockHeight() {
+  // Only resize every 500ms or longer
+  if (new Date().getTime() - lastResizeTimeStamp > 500) {
+    lastResizeTimeStamp = new Date().getTime();
+    var elems = document.querySelectorAll(`#animated-blocks-table tr td`);
+    for (var i = 0; i < elems.length; i++) {
+      elems[i].width = elems[i].getBoundingClientRect().height;
+    }
+  }
+}
+
+window.addEventListener('resize', (event) => {  
+  adjustBlockHeight();
+});
+
 let blocksAlreadyRenderedRoundId;
 function fillInAnimatedBlocks(activeRound) {
   if (activeRound && blocksAlreadyRenderedRoundId !== activeRound.id) {
     blocksAlreadyRenderedRoundId = activeRound.id;
-    for(let i=11; i>-1; i--) {
-      for(let j=0; j<12; j++) {
-        document.querySelector(`#animated-blocks-table tr:nth-child(${i+1}) td:nth-child(${j+1})`).classList.remove("filled-in");
+    for (let i = 11; i > -1; i--) {
+      for (let j = 0; j < 12; j++) {
+        document.querySelector(`#animated-blocks-table tr:nth-child(${i + 1}) td:nth-child(${j + 1})`).classList.remove("filled-in");
       }
     }
     let counter = 0;
-    for(let j=11; j>(11-activeRound.prompt[1]); j--) {
-      for(let i=0; i<activeRound.prompt[0]; i++) {
+    for (let j = 11; j > (11 - activeRound.prompt[1]); j--) {
+      for (let i = 0; i < activeRound.prompt[0]; i++) {
         counter++;
         setTimeout(() => {
-          document.querySelector(`#animated-blocks-table tr:nth-child(${j+1}) td:nth-child(${i+1})`).classList.add("filled-in");
-        }, 21*counter);
-      } 
+          document.querySelector(`#animated-blocks-table tr:nth-child(${j + 1}) td:nth-child(${i + 1})`).classList.add("filled-in");
+        }, 21 * counter);
+      }
     }
-        
+
   }
 }
 
@@ -92,6 +109,8 @@ function hideModal() {
 function showShareLinkSection() {
   document.getElementById("share-link-section").style.display = "block";
   showModal();
+  document.getElementById("game-share-link").focus();
+  document.getElementById("game-share-link").select();
 }
 
 function turnOnNotificationMessage() {
@@ -142,7 +161,7 @@ function turnOnUserAnswerFields() {
 }
 
 function turnOffUserAnswerFields() {
-  document.getElementById("answer-question-form").style.display = "none";  
+  document.getElementById("answer-question-form").style.display = "none";
 }
 
 function hasUserAlreadyAnswered(answers) {
@@ -150,7 +169,7 @@ function hasUserAlreadyAnswered(answers) {
 }
 
 function prepareHiddenAnswerDisplay(questionPrompt) {
-  document.getElementById("correct-answer").innerHTML = "Correct answer: " + questionPrompt[0] * questionPrompt[1];    
+  document.getElementById("correct-answer").innerHTML = "Correct answer: " + questionPrompt[0] * questionPrompt[1];
 }
 
 function turnOnRealAnswerDisplay() {
@@ -183,10 +202,12 @@ function updateUI(serverMessage) {
     }
 
   } else {
+
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRoundIndex;
-
+    
+    adjustBlockHeight();
     if (gameState.activeRound) {
 
       document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
@@ -277,7 +298,7 @@ function notifyUser(notification) {
   setTimeout(() => {
     turnOffNotificationMessage();
   }, notificationDuration);
-} 
+}
 
 document.getElementById("show-share-link").onclick = () => {
   showShareLinkSection();
@@ -332,7 +353,7 @@ webSocket.onclose = () => {
 };
 
 function joinGame() {
-  let userEnteredName = document.getElementById("display-name").value.replace(/[^a-z-_0-9]+/gi, " ").substring(0,40).trim();
+  let userEnteredName = document.getElementById("display-name").value.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 40).trim();
   localStorage.setItem("displayName", userEnteredName);
   webSocket.send(JSON.stringify({
     action: "JOIN_GAME",
@@ -346,7 +367,7 @@ function submitAnswer() {
     answer: document.getElementById("answer-field").value
   }));
 }
-function startNextRound() {  
+function startNextRound() {
   webSocket.send(JSON.stringify({
     action: "START_NEXT_ROUND"
   }));
@@ -357,13 +378,13 @@ document.getElementById("start-next-round").onclick = () => {
 };
 
 document.getElementById("answer-field").onchange = () => {
-  if(document.getElementById("answer-field").value !== undefined) {
+  if (document.getElementById("answer-field").value !== undefined) {
     document.getElementById("submit-answer").disabled = false;
   }
 };
 
 document.getElementById("answer-field").onkeyup = () => {
-  if(document.getElementById("answer-field").value !== undefined) {
+  if (document.getElementById("answer-field").value !== undefined) {
     document.getElementById("submit-answer").disabled = false;
   }
 };

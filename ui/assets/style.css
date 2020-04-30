@@ -37,13 +37,18 @@ a {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
+  height: 50%;
+}
+@media only screen and (min-width : 650px) {
+  #animated-blocks-table {
+    height: 60%;
+  }
 }
 #animated-blocks-table td {
   background-color: #bbbbbb;
   border-radius: 6px;
-  width: 15px;
-  height: 15px;
 }
+
 #animated-blocks-table td.filled-in {
   background-color: #FFFFFF;
   -webkit-transition: background-color 160ms linear;

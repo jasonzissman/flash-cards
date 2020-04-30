@@ -39,7 +39,11 @@ let webSocketHelper = {
             let eightHoursAgo = new Date().getTime() - 28800000;
             webSocketHelper.webSocketServer.clients.forEach((webSocketConn) => {
                 if (webSocketConn.isAlive === false || webSocketConn.lastActivity < tenMinutesAgo || webSocketConn.created < eightHoursAgo) {
-                    logger.info(`Websocket connection expired for user ${webSocketConn.sessionInfo.userId}. Terminating websocket.`);
+                    if (webSocketConn.sessionInfo) {
+                        logger.info(`Websocket connection expired for user ${webSocketConn.sessionInfo.userId}. Terminating websocket.`);
+                    } else {
+                        logger.info(`Websocket connection expired for user (NO USER ID FOUND). Terminating websocket.`);
+                    }
                     return webSocketConn.terminate();
                 }
                 webSocketConn.isAlive = false;
