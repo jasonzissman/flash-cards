@@ -49,7 +49,7 @@ class GameStateFlashCardsMultiplication {
         this.currentRoundIndex++;
 
         let rightNow = new Date();
-        let roundDuration = 10; // seconds
+        let roundDuration = 20; // seconds
         let expireTime = new Date();
         expireTime.setSeconds(expireTime.getSeconds() + roundDuration);
 

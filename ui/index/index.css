@@ -1,0 +1,27 @@
+#top-banner {
+    text-align: center;
+    background-image: url('./kids-at-chalkboard.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    width: 100%;
+    height: 100vh;
+}
+#main-header {
+    padding: 8px;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.75);
+}
+#elevator-pitch .container {
+    padding: 4.5rem .5rem 2.5rem .5rem;    
+}
+#available-games .container {
+    padding: 4.5rem .5rem 2.5rem .5rem;
+}
+
+#available-games .column {
+    margin-bottom: 8px;
+}

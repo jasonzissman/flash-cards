@@ -2,6 +2,8 @@ let userId = new URLSearchParams(window.location.search).get('userId');
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
 
+
+
 ////////////////////////////////////////////////
 ////// UI CODE - belongs somewhere else
 ///////////////////////////////////////////////
@@ -34,6 +36,9 @@ function getCurrentUserScore(activePlayers) {
 function shouldShowWelcomeScreen(activePlayers) {
   return !activePlayers || activePlayers.length === 0 || !hasPlayerJoinedGame(activePlayers);
 }
+
+// TODO - countdown lags 0.8 s when hosted in heroku
+// Perhaps adjust for latency by keeping track of server time?
 
 let roundCountdownTimerIntervalId;
 function updateRoundCountdownTimer(activeRound) {
