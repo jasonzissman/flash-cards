@@ -197,7 +197,8 @@ let webSocketHelper = {
                 messageType: "INIT_CONNECTION_COMPLETE",
                 tenantId: webSocketConn.sessionInfo.tenantId,
                 gameId: webSocketConn.sessionInfo.gameId,
-                userId: webSocketConn.sessionInfo.userId
+                userId: webSocketConn.sessionInfo.userId,
+                serverTime: new Date().getTime()
             }));
         } else {
             return webSocketHelper.terminateWebsocketSinceGameNotFound(webSocketConn);

@@ -16,7 +16,9 @@ app.get('/:tenantId/active-games', (req, res) => {
 });
 
 
-// TODO - in the real world, web sockets and http would be on different ports.
-WebSocketHelper.startWebSocketServer(app.listen(httpPort, () => {
+let appListener = app.listen(httpPort, () => {
   logger.info('Flashcards app listening on port %s!', httpPort);
-}));
+})
+
+// TODO - in the real world, web sockets and http would be on different ports.
+WebSocketHelper.startWebSocketServer(appListener);
