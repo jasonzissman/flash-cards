@@ -46,7 +46,7 @@ function updateRoundCountdownTimer(activeRound) {
     document.getElementById("round-status").innerHTML = "Waiting on other players...";
   } else if (activeRound && roundCountdownTimerIntervalId === undefined) {
     roundCountdownTimerIntervalId = setInterval(() => {
-      let timeLeft = activeRound.expireTime - new Date().getTime() - serverTimeDifference;
+      let timeLeft = activeRound.expireTime - new Date().getTime() + serverTimeDifference;
       if (timeLeft < 0) {
         timeLeft = 0;
       }
@@ -138,7 +138,7 @@ function updateNextRoundCountdownTimer(nextRoundStartTime) {
     turnOnNotificationMessage();
 
     nextRoundCountdownTimerIntervalId = setInterval(() => {
-      let timeLeft = nextRoundStartTime - new Date().getTime() - serverTimeDifference;
+      let timeLeft = nextRoundStartTime - new Date().getTime() + serverTimeDifference;
       if (timeLeft <= 0) {
         timeLeft = 0;
       }
@@ -339,7 +339,6 @@ webSocket.onmessage = (event) => {
     } else if (serverMessage.messageType === "INIT_CONNECTION_COMPLETE") {
       userId = serverMessage.userId;
       serverTimeDifference = new Date().getTime() - serverMessage.serverTime;
-      console.log("SERVER TIME DIFF: " + serverTimeDifference);
       document.getElementById("game-share-link").value = location.href.split("?")[0] + "?gameId=" + serverMessage.gameId;
     } else if (serverMessage.messageType === "PING") {
       webSocket.send(JSON.stringify({
