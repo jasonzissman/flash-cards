@@ -1,17 +1,16 @@
+////////////////////////////////////////////////
+////// Client state code
+///////////////////////////////////////////////
+
 let userId = new URLSearchParams(window.location.search).get('userId');
 const tenantId = new URLSearchParams(window.location.search).get('tenantId');
 const gameId = new URLSearchParams(window.location.search).get('gameId');
-let serverTimeDifference; // Needed to calibrate time disparities
+let serverTimeDifference; // Needed to calibrate time disparities during countdowns
+let hasGameEndedForThisUser = false; // Client-only variable used when websockect connection dies
 
 ////////////////////////////////////////////////
-////// UI CODE - belongs somewhere else
+////// UI CODE
 ///////////////////////////////////////////////
-
-hasGameEndedForThisUser = false;
-
-function printMessage(message) {
-  console.log(message);
-}
 
 function getCurrentPlayerFromActivePlayers(activePlayers) {
   let retVal = undefined;
@@ -35,9 +34,6 @@ function getCurrentUserScore(activePlayers) {
 function shouldShowWelcomeScreen(activePlayers) {
   return !activePlayers || activePlayers.length === 0 || !hasPlayerJoinedGame(activePlayers);
 }
-
-// TODO - countdown lags 0.8 s when hosted in heroku
-// Perhaps adjust for latency by keeping track of server time?
 
 let roundCountdownTimerIntervalId;
 function updateRoundCountdownTimer(activeRound) {
@@ -311,10 +307,24 @@ document.getElementById("modal-overlay").onclick = () => {
   hideModal();
 };
 
-////////////////////////////////////////////////
-////// END OF UI CODE
-///////////////////////////////////////////////
+document.getElementById("answer-field").onchange = () => {
+  if (document.getElementById("answer-field").value !== undefined) {
+    document.getElementById("submit-answer").disabled = false;
+  }
+};
 
+document.getElementById("answer-field").onkeyup = () => {
+  if (document.getElementById("answer-field").value !== undefined) {
+    document.getElementById("submit-answer").disabled = false;
+  }
+};
+
+document.getElementById("display-name").value = localStorage.getItem("displayName");
+
+
+////////////////////////////////////////////////
+////// WebSocket Code
+///////////////////////////////////////////////
 
 // TODO - in the real world, web sockets and http would be on different ports.
 const webSocketUrl = location.origin.replace(/^http/, 'ws');
@@ -348,7 +358,7 @@ webSocket.onmessage = (event) => {
       endGame(`Could not find game ${serverMessage.gameId}. <a href="/">Please start a new game.</a>`);
     }
   }
-  printMessage(JSON.stringify(serverMessage, undefined, 4));
+  
 };
 
 webSocket.onclose = () => {
@@ -372,6 +382,7 @@ function submitAnswer() {
     answer: document.getElementById("answer-field").value
   }));
 }
+
 function startNextRound() {
   webSocket.send(JSON.stringify({
     action: "START_NEXT_ROUND"
@@ -381,17 +392,3 @@ function startNextRound() {
 document.getElementById("start-next-round").onclick = () => {
   startNextRound();
 };
-
-document.getElementById("answer-field").onchange = () => {
-  if (document.getElementById("answer-field").value !== undefined) {
-    document.getElementById("submit-answer").disabled = false;
-  }
-};
-
-document.getElementById("answer-field").onkeyup = () => {
-  if (document.getElementById("answer-field").value !== undefined) {
-    document.getElementById("submit-answer").disabled = false;
-  }
-};
-
-document.getElementById("display-name").value = localStorage.getItem("displayName");
