@@ -12,7 +12,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\index.js"
+            "program": "${workspaceFolder}\\index.js",
+            "env": {
+                "LOG_FILE": "C:\\Users\\Jason\\Documents\\websites\\flash-cards\\log\\server.log"
+            }
         }
     ]
 }

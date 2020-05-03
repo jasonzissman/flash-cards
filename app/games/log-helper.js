@@ -10,7 +10,7 @@ let logger = bunyan.createLogger({
         },
         {
             type: 'rotating-file',
-            path: 'server.log',
+            path: process.env.LOG_FILE || 'server.log',
             period: '1d',
             count: 14
         }]
