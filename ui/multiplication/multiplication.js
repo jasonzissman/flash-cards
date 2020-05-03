@@ -1,8 +1,12 @@
 ////////////////////////////////////////////////
 ////// UI code specific to multiplication game
 ///////////////////////////////////////////////
-
+let operator = "X";
 let gameType = "FLASH_CARDS_MULTIPLICATION";
+
+function getCorrectAnswer(questionPrompt) {
+  return questionPrompt[0] * questionPrompt[1];
+}
 
 function resetAllAnimatedBlocks() {
   for (let i = 11; i > -1; i--) {

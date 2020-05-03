@@ -16,9 +16,7 @@ const gameHelper = {
             gameState = new GameStateFlashCardsMultiplication();
         } else if (gameType === "FLASH_CARDS_ADDITION") {
             gameState = new GameStateFlashCardsAddition();
-        }
-        
-        
+        }        
 
         let newGame = {
             id: gameId,

@@ -37,7 +37,7 @@ function adjustBlockHeight() {
   }
 }
 
-window.addEventListener('resize', (event) => {  
+window.addEventListener('resize', (event) => {
   adjustBlockHeight();
 });
 
@@ -122,7 +122,7 @@ function hasUserAlreadyAnswered(answers) {
 }
 
 function prepareHiddenAnswerDisplay(questionPrompt) {
-  document.getElementById("correct-answer").innerHTML = "Correct answer: " + questionPrompt[0] * questionPrompt[1];
+  document.getElementById("correct-answer").innerHTML = "Correct answer: " + getCorrectAnswer(questionPrompt);
 }
 
 function turnOnRealAnswerDisplay() {
@@ -159,11 +159,12 @@ function updateUI(serverMessage) {
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("current-round").innerHTML = "Round " + gameState.currentRoundIndex;
-    
+
     adjustBlockHeight();
     if (gameState.activeRound) {
 
-      document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + " X " + gameState.activeRound.prompt[1];
+      document.getElementById("question-prompt").innerHTML = gameState.activeRound.prompt[0] + ` ${operator} ` + gameState.activeRound.prompt[1];
+
       fillInAnimatedBlocks(gameState.activeRound);
       prepareHiddenAnswerDisplay(gameState.activeRound.prompt);
 
