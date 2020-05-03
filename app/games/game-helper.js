@@ -1,4 +1,5 @@
 const GameStateFlashCardsMultiplication = require('./game-state-flash-cards-multiplication');
+const GameStateFlashCardsAddition = require('./game-state-flash-cards-addition');
 const logger = require('./log-helper');
 const { v4: uuidv4 } = require('uuid');
 
@@ -6,11 +7,18 @@ const gameHelper = {
 
     CURRENT_GAMES: [],
 
-    createNewGame: (tenantId) => {
+    createNewGame: (tenantId, gameType) => {
 
         let gameId = uuidv4();
 
-        let gameState = new GameStateFlashCardsMultiplication();
+        let gameState;
+        if (gameType === "FLASH_CARDS_MULTIPLICATION") {
+            gameState = new GameStateFlashCardsMultiplication();
+        } else if (gameType === "FLASH_CARDS_ADDITION") {
+            gameState = new GameStateFlashCardsAddition();
+        }
+        
+        
 
         let newGame = {
             id: gameId,
