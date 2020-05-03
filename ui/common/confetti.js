@@ -94,14 +94,14 @@ function animate(root, fettis, dragFriction, decay, duration, stagger) {
 const defaults = {
   angle: 90,
   spread: 45,
-  startVelocity: 45,
+  startVelocity: 50,
   elementCount: 50,
   width: "10px",
   height: "10px",
   colors: defaultColors,
-  duration: 3000,
+  duration: 3200,
   stagger: 0,
-  dragFriction: 0.1,
+  dragFriction: 0.08,
   random: Math.random,
   divContent: undefined,
   fontSize: undefined
