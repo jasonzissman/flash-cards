@@ -9,6 +9,7 @@ const webSocket = new WebSocket(webSocketUrl);
 webSocket.onopen = () => {
   webSocket.send(JSON.stringify({
     action: "INITIALIZE_CONNECTION",
+    gameType: gameType,
     tenantId: tenantId,
     gameId: gameId,
     userId: userId

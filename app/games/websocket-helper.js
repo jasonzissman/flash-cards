@@ -9,7 +9,7 @@ let webSocketHelper = {
 
     startWebSocketServer: (expressServer) => {
 
-        webSocketHelper.webSocketServer = new WebSocket.Server({server: expressServer});
+        webSocketHelper.webSocketServer = new WebSocket.Server({ server: expressServer });
 
         webSocketHelper.webSocketServer.on('connection', (webSocketConn) => {
 
@@ -48,7 +48,6 @@ let webSocketHelper = {
                 }
                 webSocketConn.isAlive = false;
                 webSocketConn.send(JSON.stringify({
-                    gameType: "FLASH_CARDS_MULTIPLICATION",
                     messageType: "PING",
                 }));
             });
@@ -60,7 +59,6 @@ let webSocketHelper = {
         if (!webSocketHelper.isValidMessage(messageStr)) {
             logger.error("Invalid message!!! Size: " + messageStr.length);
             webSocketConn.send(JSON.stringify({
-                gameType: "FLASH_CARDS_MULTIPLICATION",
                 messageType: "INVALID_MESSAGE_PROVIDED",
                 message: "Invalid message provided."
             }));
@@ -136,9 +134,14 @@ let webSocketHelper = {
             tenantId = tenantId.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 100).trim();
         }
 
+        let gameType = message.gameType;
+        if (gameType) {
+            gameType = gameType.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 100).trim();
+        }
+
         let gameId = message.gameId;
         if (!gameId) {
-            gameId = gameHelper.createNewGame(tenantId);
+            gameId = gameHelper.createNewGame(tenantId, gameType);
         } else {
             gameId = gameId.replace(/[^a-z-_0-9]+/gi, " ").substring(0, 100).trim();
         }
@@ -153,13 +156,13 @@ let webSocketHelper = {
         return {
             tenantId: tenantId,
             gameId: gameId,
-            userId: userId
+            userId: userId,
+            gameType: gameType
         };
     },
 
     terminateWebsocketSinceGameNotFound: (webSocketConn) => {
         webSocketConn.send(JSON.stringify({
-            gameType: "FLASH_CARDS_MULTIPLICATION",
             messageType: "GAME_NOT_FOUND",
             gameId: webSocketConn.sessionInfo.gameId
         }));
@@ -167,14 +170,25 @@ let webSocketHelper = {
         return webSocketConn.terminate();
     },
 
+    isSessionInfoValid(sessionInfo) {
+        let retVal = false;
+        if (sessionInfo.tenantId &&
+                sessionInfo.userId &&
+                sessionInfo.gameType
+                && sessionInfo.gameId &&
+                gameHelper.getGame(sessionInfo.gameId)) {
+            retVal = true;
+        }
+        return retVal;
+    },
+
     initializeWebSocketConnection: (webSocketConn, message) => {
 
         webSocketConn.sessionInfo = webSocketHelper.getCleansedSessionInfo(message);
 
-        if (gameHelper.getGame(webSocketConn.sessionInfo.gameId)) {
+        if (webSocketHelper.isSessionInfoValid(webSocketConn.sessionInfo)) {
             webSocketConn.sendGameStateChange = (gameState) => {
                 webSocketConn.send(JSON.stringify({
-                    gameType: "FLASH_CARDS_MULTIPLICATION",
                     messageType: "GAME_STATE_CHANGE",
                     activePlayers: gameHelper.getGame(webSocketConn.sessionInfo.gameId).activePlayers,
                     gameState: gameState
@@ -184,7 +198,6 @@ let webSocketHelper = {
 
             webSocketConn.sendUserNotification = (notification) => {
                 webSocketConn.send(JSON.stringify({
-                    gameType: "FLASH_CARDS_MULTIPLICATION",
                     messageType: "NOTIFY_USER",
                     notification: notification
                 }));
@@ -193,7 +206,6 @@ let webSocketHelper = {
             gameHelper.getGame(webSocketConn.sessionInfo.gameId).gameState.gameStateChangeEmitter.on(userSpecificEventName, webSocketConn.sendUserNotification);
 
             webSocketConn.send(JSON.stringify({
-                gameType: "FLASH_CARDS_MULTIPLICATION",
                 messageType: "INIT_CONNECTION_COMPLETE",
                 tenantId: webSocketConn.sessionInfo.tenantId,
                 gameId: webSocketConn.sessionInfo.gameId,

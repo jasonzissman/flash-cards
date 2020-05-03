@@ -1,6 +1,9 @@
 ////////////////////////////////////////////////
 ////// UI code specific to multiplication game
 ///////////////////////////////////////////////
+
+let gameType = "FLASH_CARDS_MULTIPLICATION";
+
 function resetAllAnimatedBlocks() {
   for (let i = 11; i > -1; i--) {
     for (let j = 0; j < 12; j++) {
