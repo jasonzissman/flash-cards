@@ -1,0 +1,101 @@
+<html>
+
+<head>
+    <title>Addition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../common/spectre-2020-04-29.min.css">
+    <link rel="stylesheet" type="text/css" href="../common/chalkboard-game.css" />
+</head>
+
+<body>
+    <div class="container" style="height: 100%;">
+        <div class="columns" style="height: 100%;">
+            <section class="col-9 col-md-8 col-sm-12" style="margin-bottom: 20px;">
+                <section id="welcome-screen">
+                    <p id="welcome-message-num-players">You are the only one in the game.</p>
+                    <label>Enter your name</label>
+                    <form action="javascript:joinGame();">
+                        <input id="display-name" type="text" value="Player 1" maxlength="40" required autofocus />
+                        <button id="join-game">Join Game</button>
+                    </form>
+                </section>
+                <section id="game-screen" style="display:none;">
+                    <span id="current-round">Round 1</span> - <span id="round-status">20.0 seconds</span>
+                    <p id="question-prompt"></p>
+                    <form id="answer-question-form" action="javascript:submitAnswer();">
+                        <input id="answer-field" type="number" maxlength=10 autofocus />
+                        <button id="submit-answer" disabled>Submit Answer</button>
+                    </form>
+                    <span id="correct-answer" style="display:none;"></span>
+                    <button id="start-next-round">Start Next Round</button>
+                    <section id="animated-blocks" style="margin-bottom: 10px;">
+                        <table id="animated-blocks-table">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>                            
+                        </table>
+                    </section>                    
+                </section>
+            </section>
+
+            <section id="scoreboard" class="col-3 col-md-4 col-sm-12">
+                <h2>Scoreboard</h2>
+                <section>
+                    <a id="show-share-link" href="javascript:void(0);">Invite more players!</a>
+                </section>
+                <ol id="scoreboard-list">
+                </ol>
+            </section>
+        </div>
+    </div>
+
+    <div id="modal" class="modal modal-sm">
+        <a id="modal-overlay" href="javascript:void(0);" class="modal-overlay" aria-label="Close"></a>
+        <div class="modal-container">
+            <div class="modal-content-wrapper">
+                <section id="share-link-section">
+                    <label>Link to join this game</label>
+                    <input type="text" readonly id="game-share-link"></input>
+                </section>
+                <section id="notification-holder" style="display:none;">
+                    <p id="notification-title"></p>
+                    <p id="notification-message"></p>
+                </section>
+                <span id="confetti-holder"></span>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="./common/confetti.js"></script>
+    <script type="text/javascript" src="./common/game-client-state.js"></script>
+    <script type="text/javascript" src="./common/game-util.js"></script>
+    <script type="text/javascript" src="./common/game-ui.js"></script>
+    <script type="text/javascript" src="./common/game-websocket.js"></script>
+    <script type="text/javascript" src="./addition/addition.js"></script>
+</body>
+
+</html>
