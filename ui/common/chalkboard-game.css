@@ -1,3 +1,4 @@
+
 @import url(https://fonts.googleapis.com/css?family=Walter+Turncoat);
 body {
   text-align: center;
@@ -33,6 +34,7 @@ a {
 #submit-answer {
   margin-top: 5px;
 }
+/** TODO - make animated blocks look better. Chalk outline?**/
 #animated-blocks {
   margin-top: 10px;
 }
