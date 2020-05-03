@@ -5,8 +5,7 @@
 let roundCountdownTimerIntervalId;
 function updateRoundCountdownTimer(activeRound) {
   if (activeRound && hasUserAlreadyAnswered(activeRound.answers)) {
-    turnOffRoundCountdownTimer();
-    document.getElementById("round-status").innerHTML = "Waiting on other players...";
+    document.getElementById("waiting-message").style.display = "block";
   } else if (activeRound && roundCountdownTimerIntervalId === undefined) {
     roundCountdownTimerIntervalId = setInterval(() => {
       let timeLeft = activeRound.expireTime - new Date().getTime() + serverTimeDifference;
@@ -113,6 +112,10 @@ function turnOnUserAnswerFields() {
   }
 }
 
+function turnOffWaitingMessage() {
+  document.getElementById("waiting-message").style.display = "none";
+}
+
 function turnOffUserAnswerFields() {
   document.getElementById("answer-question-form").style.display = "none";
 }
@@ -179,12 +182,13 @@ function updateUI(serverMessage) {
       document.getElementById("start-next-round").style.display = "none";
       updateRoundCountdownTimer(gameState.activeRound);
     } else {
+      turnOffWaitingMessage();
       turnOffUserAnswerFields();
       turnOffRoundCountdownTimer();
       if (document.getElementById("start-next-round").style.display === "none") {
         document.getElementById("start-next-round").style.display = "inline-block";
         document.getElementById("start-next-round").focus();
-        document.getElementById("round-status").innerHTML = "Completed";
+        document.getElementById("round-status").innerHTML = "Complete";
       }
     }
 

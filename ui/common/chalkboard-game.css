@@ -35,6 +35,10 @@ a {
 form {
   margin-bottom: 0px;
 }
+#waiting-message {
+  display: none;
+  font-size: 24px;
+}
 #answer-field {
   font-size: 20px;
   width: 150px;
