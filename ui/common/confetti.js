@@ -9,7 +9,7 @@ function createElements(root, elementCount, colors, width, height, divContent, f
     }
     element.style["font-size"] = fontSize;
     element.style["background-color"] = color; // eslint-disable-line space-infix-ops
-    element.style["background-color"] = color; // eslint-disable-line space-infix-ops
+    element.style["color"] = "#000000"; // use black if font being displayed
     element.style.width = width;
     element.style.height = height;
     element.style.position = "absolute";
@@ -99,9 +99,9 @@ const defaults = {
   width: "10px",
   height: "10px",
   colors: defaultColors,
-  duration: 3200,
+  duration: 3000,
   stagger: 0,
-  dragFriction: 0.08,
+  dragFriction: 0.075,
   random: Math.random,
   divContent: undefined,
   fontSize: undefined

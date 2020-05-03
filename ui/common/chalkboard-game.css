@@ -28,17 +28,35 @@ input {
 a { 
   color: yellow;
 }
+#game-controls {
+  margin-top: 5px;
+  margin-bottom: 20px;
+}
+form {
+  margin-bottom: 0px;
+}
 #answer-field {
   font-size: 20px;
+  width: 150px;
 }
-#submit-answer {
-  margin-top: 5px;
-}
+
 /** TODO - make animated blocks look better. Chalk outline?**/
 #animated-blocks {
   margin-top: 10px;
 }
-
+#animated-blocks-container {
+  position: relative;
+}
+#correct-answer {
+  padding: 8px;
+  font-size: 20px;
+  background-color: rgba(255,255,255, 0.85);
+  color: black;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 #animated-blocks-table {
   text-align: center;
   margin-left: auto;

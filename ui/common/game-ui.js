@@ -274,3 +274,10 @@ document.getElementById("answer-field").onkeyup = () => {
 };
 
 document.getElementById("display-name").value = localStorage.getItem("displayName");
+
+// We don't want virtual keyboards on mobile devices to
+// cause our screen to reposition elements vertically, so we capture the
+// initialviewport  height and width and keep them constant.
+setTimeout(() => {
+  document.querySelector("meta[name=viewport]").setAttribute("content", `height=${window.innerHeight}px, width=${window.innerWidth}px, initial-scale=1.0`);
+}, 300);
